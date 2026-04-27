@@ -1,0 +1,95 @@
+filters:
+  and:
+    - file.ext == "md"
+    - course != null
+    - file.folder != "templates"
+formulas:
+  note_link: file.asLink(file.name)
+properties:
+  formula.note_link:
+    displayName: Note
+  file.folder:
+    displayName: Folder
+  file.mtime:
+    displayName: Updated
+  date:
+    displayName: Date
+  course:
+    displayName: Course
+  type:
+    displayName: Type
+  lecture:
+    displayName: Lecture
+views:
+  - type: table
+    name: All notes
+    order:
+      - formula.note_link
+      - lecture
+      - date
+      - file.folder
+      - file.mtime
+      - course
+      - type
+    sort:
+      - property: formula.note_link
+        direction: ASC
+      - property: lecture
+        direction: DESC
+      - property: file.mtime
+        direction: ASC
+      - property: file.folder
+        direction: DESC
+      - property: course
+        direction: ASC
+  - type: table
+    name: Study material
+    filters:
+      or:
+        - type == "selbstkontrolle"
+        - type == "lernziele"
+    order:
+      - formula.note_link
+      - course
+      - lecture
+      - date
+      - file.mtime
+    sort:
+      - property: course
+        direction: ASC
+      - property: lecture
+        direction: ASC
+      - property: file.mtime
+        direction: DESC
+  - type: table
+    name: Lectures
+    filters: type == "lecture"
+    order:
+      - formula.note_link
+      - course
+      - lecture
+      - date
+      - file.mtime
+    sort:
+      - property: course
+        direction: ASC
+      - property: lecture
+        direction: ASC
+  - type: table
+    name: Exercises and solutions
+    filters:
+      or:
+        - type == "exercise"
+        - type == "solution"
+    order:
+      - formula.note_link
+      - course
+      - lecture
+      - type
+      - date
+      - file.mtime
+    sort:
+      - property: course
+        direction: ASC
+      - property: lecture
+        direction: ASC

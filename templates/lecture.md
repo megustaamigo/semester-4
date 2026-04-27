@@ -1,14 +1,17 @@
 ---
-course:
+course: <% tp.system.prompt("Course tag? (web-engineering, kommunikationssysteme, numerik, csharp, data-science, large-scale-it)") %>
 type: lecture
-date: {{date}}
-tags: []
+date: <% tp.date.now("YYYY-MM-DD") %>
+tags:
+  - <% tp.system.prompt("Course tag?") %>
+  - lecture
+source:
 ---
 
-# {{title}}
+# <% tp.file.title %>
 
-## Key Concepts
+**Folien:**
 
-## Notes
+## Inhaltsverzeichnis
 
-## Questions
+---
