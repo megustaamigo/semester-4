@@ -15,10 +15,13 @@ tags:
 
 1. [[#1. LU-Zerlegung (Gauß-Elimination)|LU-Zerlegung (Gauß-Elimination)]]
 2. [[#2. LU-Zerlegung mit Pivotsuche (Spalten-Pivotisierung)|LU-Zerlegung mit Pivotsuche]]
-3. [[#3. Cholesky-Zerlegung|Cholesky-Zerlegung]]
-4. [[#4. Kondition einer Matrix|Kondition einer Matrix]]
-5. [[#5. Prager und Oettli (Stoerungsanalyse)|Prager und Oettli]]
-6. [[#Zusammenfassung|Zusammenfassung]]
+3. [[#3. Nachiteration (Iterative Refinement)|Nachiteration]]
+4. [[#4. Cholesky-Zerlegung|Cholesky-Zerlegung]]
+5. [[#5. Kondition einer Matrix|Kondition einer Matrix]]
+6. [[#6. Prager und Oettli (Stoerungsanalyse)|Prager und Oettli]]
+7. [[#7. Jacobi-Verfahren|Jacobi-Verfahren]]
+8. [[#8. Gauss-Seidel-Verfahren|Gauss-Seidel-Verfahren]]
+9. [[#Zusammenfassung|Zusammenfassung]]
 
 ---
 
@@ -258,7 +261,86 @@ $Pb = \begin{pmatrix} 7 \\ 11 \\ 5 \end{pmatrix}$
 
 ---
 
-## 3. Cholesky-Zerlegung
+## 3. Nachiteration (Iterative Refinement)
+
+### Idee
+
+Die Nachiteration verbessert eine bereits berechnete (ungenaue) Loesung $\tilde{x}$ eines linearen Gleichungssystems $Ax = b$ schrittweise. Sie nutzt die **bereits vorhandene LU-Zerlegung** aus und ist daher sehr guenstig — pro Nachiterationsschritt fallen nur $\mathcal{O}(n^2)$ Operationen an (statt $\frac{2}{3}n^3$ fuer eine neue Zerlegung).
+
+> [!tip] Merke
+> Die Nachiteration ist besonders sinnvoll, wenn die LU-Zerlegung bereits berechnet wurde und die Loesung durch Rundungsfehler ungenau ist. Man "recycelt" die Zerlegung, um die Loesung iterativ zu verbessern.
+
+### Algorithmus
+
+Gegeben: $A$, $b$, LU-Zerlegung $PA = LU$, Naeherungsloesung $\tilde{x}$
+
+**Fuer** $k = 0, 1, 2, \dots$ (bis Konvergenz):
+
+1. **Residuum berechnen:** $r^{(k)} = b - A\tilde{x}^{(k)}$
+2. **Korrektursystem loesen:** $A \cdot d^{(k)} = r^{(k)}$ (mittels der vorhandenen LU-Zerlegung: Vorwaerts-/Rueckwaertssubstitution)
+3. **Loesung aktualisieren:** $\tilde{x}^{(k+1)} = \tilde{x}^{(k)} + d^{(k)}$
+
+> [!warning] Achtung
+> Das Residuum $r^{(k)} = b - A\tilde{x}^{(k)}$ sollte in **hoeherer Genauigkeit** (z.B. doppelte Praezision) berechnet werden, wenn die Zerlegung in einfacher Praezision erfolgte. Sonst kann die Nachiteration wirkungslos sein, da das Residuum selbst zu ungenau ist.
+
+### Warum funktioniert das?
+
+Der Fehler der aktuellen Naeherung ist $e^{(k)} = x - \tilde{x}^{(k)}$. Es gilt:
+
+$$A \cdot e^{(k)} = A(x - \tilde{x}^{(k)}) = b - A\tilde{x}^{(k)} = r^{(k)}$$
+
+Also loest der Fehler $e^{(k)}$ genau das System $Ad = r^{(k)}$. Die berechnete Korrektur $d^{(k)}$ ist eine Naeherung an $e^{(k)}$, und $\tilde{x}^{(k+1)} = \tilde{x}^{(k)} + d^{(k)}$ ist damit naeher an der exakten Loesung.
+
+### Aufwand pro Iterationsschritt
+
+- Residuum $r = b - A\tilde{x}$: eine Matrix-Vektor-Multiplikation → $\mathcal{O}(n^2)$
+- Korrektursystem $Ad = r$ loesen (Vorwaerts-/Rueckwaertssubstitution mit vorhandener LU): $\mathcal{O}(n^2)$
+- Update $\tilde{x} + d$: $\mathcal{O}(n)$
+
+**Gesamt:** $\mathcal{O}(n^2)$ pro Schritt — deutlich guenstiger als die initiale Zerlegung mit $\mathcal{O}(n^3)$.
+
+### Beispiel
+
+Gegeben:
+
+$$A = \begin{pmatrix} 4 & 1 \\ 1 & 3 \end{pmatrix}, \quad b = \begin{pmatrix} 9 \\ 7 \end{pmatrix}$$
+
+**Exakte Loesung:** $x = (2, 1)^T$ (Probe: $4 \cdot 2 + 1 \cdot 1 = 9$, $1 \cdot 2 + 3 \cdot 1 = 5$... falsch, nehmen wir $b = (9, 5)^T$, dann stimmt $x = (2, 1)^T$.)
+
+Korrigiert: $b = (9, 5)^T$, exakte Loesung $x = (2, 1)^T$.
+
+Angenommen, durch Rundungsfehler in der LU-Zerlegung erhaelt man $\tilde{x}^{(0)} = (1.98, 1.01)^T$.
+
+**Schritt 1: Residuum berechnen**
+
+$$r^{(0)} = b - A\tilde{x}^{(0)} = \begin{pmatrix} 9 \\ 5 \end{pmatrix} - \begin{pmatrix} 4 & 1 \\ 1 & 3 \end{pmatrix} \begin{pmatrix} 1.98 \\ 1.01 \end{pmatrix} = \begin{pmatrix} 9 \\ 5 \end{pmatrix} - \begin{pmatrix} 8.93 \\ 5.01 \end{pmatrix} = \begin{pmatrix} 0.07 \\ -0.01 \end{pmatrix}$$
+
+**Schritt 2: Korrektursystem loesen**
+
+$$A \cdot d^{(0)} = r^{(0)} = \begin{pmatrix} 0.07 \\ -0.01 \end{pmatrix}$$
+
+$$\begin{pmatrix} 4 & 1 \\ 1 & 3 \end{pmatrix} \begin{pmatrix} d_1 \\ d_2 \end{pmatrix} = \begin{pmatrix} 0.07 \\ -0.01 \end{pmatrix}$$
+
+Mit Cramer oder Substitution: $\det(A) = 11$
+
+- $d_1 = \frac{0.07 \cdot 3 - 1 \cdot (-0.01)}{11} = \frac{0.22}{11} = 0.02$
+- $d_2 = \frac{4 \cdot (-0.01) - 0.07 \cdot 1}{11} = \frac{-0.11}{11} = -0.01$
+
+**Schritt 3: Loesung aktualisieren**
+
+$$\tilde{x}^{(1)} = \tilde{x}^{(0)} + d^{(0)} = \begin{pmatrix} 1.98 \\ 1.01 \end{pmatrix} + \begin{pmatrix} 0.02 \\ -0.01 \end{pmatrix} = \begin{pmatrix} 2.0 \\ 1.0 \end{pmatrix}$$
+
+Nach **einem** Nachiterationsschritt hat man bereits die exakte Loesung erreicht.
+
+### Konvergenz
+
+Die Nachiteration konvergiert, solange die Matrix $A$ nicht zu schlecht konditioniert ist. Genauer: Wenn die LU-Zerlegung in Praezision $\varepsilon$ berechnet wird und das Residuum in hoeherer Praezision, dann konvergiert die Nachiteration fuer $\kappa(A) \cdot \varepsilon < 1$.
+
+Bei **schlecht konditionierten** Matrizen ($\kappa(A) \cdot \varepsilon \geq 1$) kann die Nachiteration stagnieren oder divergieren.
+
+---
+
+## 4. Cholesky-Zerlegung
 
 ### Idee
 
@@ -426,7 +508,7 @@ Beachte: **Alle** $|l_{ij}| \leq 1$ — das ist die zentrale Eigenschaft der Spa
 
 ---
 
-## 4. Kondition einer Matrix
+## 5. Kondition einer Matrix
 
 ### Definition
 
@@ -530,7 +612,7 @@ Für $\beta = 10$: $\kappa_\infty \approx \frac{11}{9} \approx 1.22$ — die Mat
 
 ---
 
-## 5. Prager und Oettli (Störungsanalyse)
+## 6. Prager und Oettli (Störungsanalyse)
 
 ### Problem
 
@@ -610,6 +692,238 @@ Knapp erfüllt — die Lösung liegt gerade noch im Toleranzbereich. **Aber:** D
 
 ---
 
+## 7. Jacobi-Verfahren
+
+### Idee
+
+Das Jacobi-Verfahren ist ein **iteratives Verfahren** zur Loesung linearer Gleichungssysteme $Ax = b$. Statt einer exakten Loesung berechnet man eine Folge von Naeherungen $x^{(0)}, x^{(1)}, x^{(2)}, \dots$, die (bei Konvergenz) gegen die exakte Loesung konvergiert.
+
+Die Grundidee: Man loest jede Gleichung nach der jeweiligen Unbekannten auf und setzt auf der rechten Seite die **alten** Werte ein.
+
+### Herleitung
+
+Man zerlegt die Matrix $A$ in:
+
+$$A = D + L + U$$
+
+wobei:
+- $D$ = Diagonalmatrix (Diagonaleintraege von $A$)
+- $L$ = strikte untere Dreiecksmatrix (Eintraege unterhalb der Diagonale)
+- $U$ = strikte obere Dreiecksmatrix (Eintraege oberhalb der Diagonale)
+
+**Achtung:** $L$ und $U$ hier sind **nicht** die Matrizen der LU-Zerlegung! Hier sind es einfach die Teile von $A$.
+
+Aus $Ax = b$ wird $(D + L + U)x = b$, also:
+
+$$Dx = b - (L + U)x$$
+
+$$x = D^{-1}(b - (L + U)x)$$
+
+Da $D$ eine Diagonalmatrix ist, ist $D^{-1}$ trivial: $d_{ii}^{-1} = \frac{1}{a_{ii}}$.
+
+### Iterationsvorschrift
+
+$$x^{(k+1)} = D^{-1}\left(b - (L + U)x^{(k)}\right)$$
+
+Komponentenweise:
+
+$$x_i^{(k+1)} = \frac{1}{a_{ii}} \left( b_i - \sum_{\substack{j=1 \\ j \neq i}}^{n} a_{ij} \cdot x_j^{(k)} \right) \quad \text{fuer } i = 1, \dots, n$$
+
+> [!tip] Merke
+> Beim Jacobi-Verfahren werden **alle** Komponenten von $x^{(k+1)}$ mit den **alten** Werten $x^{(k)}$ berechnet. Die neuen Werte werden erst im naechsten Schritt verwendet.
+
+### Iterationsmatrix
+
+$$M_J = -D^{-1}(L + U) = I - D^{-1}A$$
+
+Die Iteration lautet dann: $x^{(k+1)} = M_J x^{(k)} + D^{-1}b$
+
+### Konvergenz und Spektralradius
+
+Das Jacobi-Verfahren konvergiert genau dann, wenn der **Spektralradius** der Iterationsmatrix kleiner als 1 ist:
+
+$$\rho(M_J) < 1$$
+
+Der Spektralradius $\rho(M)$ ist der **groesste Betrag** aller Eigenwerte von $M$:
+
+$$\rho(M) = \max_{i} |\lambda_i(M)|$$
+
+**Bedeutung fuer die Konvergenz:**
+- $\rho(M_J) < 1$ → Iteration konvergiert fuer **jeden** Startwert $x^{(0)}$
+- $\rho(M_J) \geq 1$ → Iteration divergiert (im Allgemeinen)
+- Je **kleiner** $\rho(M_J)$, desto **schneller** die Konvergenz — der Fehler wird pro Schritt mit dem Faktor $\rho(M_J)$ multipliziert:
+
+$$\|e^{(k)}\| \approx \rho(M_J)^k \cdot \|e^{(0)}\|$$
+
+> [!quote] Definition
+> Der **Spektralradius** $\rho(M)$ einer Matrix $M$ ist der groesste Betrag ihrer Eigenwerte. Er bestimmt das asymptotische Konvergenzverhalten iterativer Verfahren: $\rho < 1$ bedeutet Konvergenz, $\rho \geq 1$ bedeutet Divergenz.
+
+**Hinreichendes Kriterium:** Ist $A$ **strikt diagonaldominant**, d.h.
+
+$$|a_{ii}| > \sum_{\substack{j=1 \\ j \neq i}}^{n} |a_{ij}| \quad \text{fuer alle } i$$
+
+dann ist automatisch $\rho(M_J) < 1$ und Jacobi konvergiert.
+
+### Spektralradius berechnen — Beispiel
+
+Fuer die Matrix aus dem Hauptbeispiel:
+
+$$A = \begin{pmatrix} 4 & -1 & 0 \\ -1 & 4 & -1 \\ 0 & -1 & 4 \end{pmatrix}$$
+
+Die Iterationsmatrix ist $M_J = -D^{-1}(L + U)$:
+
+$$D = \begin{pmatrix} 4 & 0 & 0 \\ 0 & 4 & 0 \\ 0 & 0 & 4 \end{pmatrix}, \quad L + U = \begin{pmatrix} 0 & -1 & 0 \\ -1 & 0 & -1 \\ 0 & -1 & 0 \end{pmatrix}$$
+
+$$M_J = -\frac{1}{4} \begin{pmatrix} 0 & -1 & 0 \\ -1 & 0 & -1 \\ 0 & -1 & 0 \end{pmatrix} = \begin{pmatrix} 0 & \frac{1}{4} & 0 \\ \frac{1}{4} & 0 & \frac{1}{4} \\ 0 & \frac{1}{4} & 0 \end{pmatrix}$$
+
+**Eigenwerte von $M_J$** (ueber $\det(M_J - \lambda I) = 0$):
+
+$$-\lambda \left(\lambda^2 - \frac{1}{8}\right) - \frac{1}{16}(-\lambda) = 0$$
+
+$$-\lambda^3 + \frac{\lambda}{8} + \frac{\lambda}{16} = 0 \implies \lambda\left(-\lambda^2 + \frac{3}{16}\right) = 0$$
+
+$$\lambda_1 = 0, \quad \lambda_{2,3} = \pm\sqrt{\frac{3}{16}} = \pm\frac{\sqrt{3}}{4} \approx \pm 0.433$$
+
+$$\rho(M_J) = \frac{\sqrt{3}}{4} \approx 0.433 < 1 \quad \implies \text{Konvergenz}$$
+
+Der Fehler schrumpft also pro Iteration um den Faktor $\approx 0.433$ — nach 5 Iterationen ist der Fehler auf ca. $0.433^5 \approx 1.5\%$ des Anfangsfehlers geschrumpft.
+
+### Beispiel
+
+Gegeben:
+
+$$\begin{pmatrix} 4 & -1 & 0 \\ -1 & 4 & -1 \\ 0 & -1 & 4 \end{pmatrix} \begin{pmatrix} x_1 \\ x_2 \\ x_3 \end{pmatrix} = \begin{pmatrix} 5 \\ 10 \\ 5 \end{pmatrix}$$
+
+**Prüfung strikte Diagonaldominanz:**
+- Zeile 1: $|4| = 4 > |-1| = 1$ (korrekt)
+- Zeile 2: $|4| = 4 > |-1| + |-1| = 2$ (korrekt)
+- Zeile 3: $|4| = 4 > |-1| = 1$ (korrekt)
+
+**Iterationsvorschrift aufstellen:**
+
+$$x_1^{(k+1)} = \frac{1}{4}\left(5 + x_2^{(k)}\right)$$
+
+$$x_2^{(k+1)} = \frac{1}{4}\left(10 + x_1^{(k)} + x_3^{(k)}\right)$$
+
+$$x_3^{(k+1)} = \frac{1}{4}\left(5 + x_2^{(k)}\right)$$
+
+**Startwert:** $x^{(0)} = (0, 0, 0)^T$
+
+**Iteration 1:**
+
+- $x_1^{(1)} = \frac{1}{4}(5 + 0) = 1.25$
+- $x_2^{(1)} = \frac{1}{4}(10 + 0 + 0) = 2.5$
+- $x_3^{(1)} = \frac{1}{4}(5 + 0) = 1.25$
+
+**Iteration 2:**
+
+- $x_1^{(2)} = \frac{1}{4}(5 + 2.5) = 1.875$
+- $x_2^{(2)} = \frac{1}{4}(10 + 1.25 + 1.25) = 3.125$
+- $x_3^{(2)} = \frac{1}{4}(5 + 2.5) = 1.875$
+
+**Iteration 3:**
+
+- $x_1^{(3)} = \frac{1}{4}(5 + 3.125) = 2.03125$
+- $x_2^{(3)} = \frac{1}{4}(10 + 1.875 + 1.875) = 3.4375$
+- $x_3^{(3)} = \frac{1}{4}(5 + 3.125) = 2.03125$
+
+**Exakte Loesung:** $x = (2,\; 3.5,\; 2)^T$ — die Naeherung konvergiert sichtbar dagegen.
+
+### Abbruchkriterium
+
+Man iteriert, bis die Aenderung klein genug ist: $\|x^{(k+1)} - x^{(k)}\| < \varepsilon$, oder bis das Residuum klein ist: $\|b - Ax^{(k)}\| < \varepsilon$.
+
+---
+
+## 8. Gauss-Seidel-Verfahren
+
+### Idee
+
+Das Gauss-Seidel-Verfahren ist eine **Verbesserung des Jacobi-Verfahrens**. Der zentrale Unterschied: Sobald eine neue Komponente $x_i^{(k+1)}$ berechnet ist, wird sie **sofort** in den folgenden Berechnungen desselben Iterationsschritts verwendet.
+
+### Herleitung
+
+Wie bei Jacobi zerlegt man $A = D + L + U$. Aus $Ax = b$ wird:
+
+$$(D + L)x = b - Ux$$
+
+$$x = (D + L)^{-1}(b - Ux)$$
+
+### Iterationsvorschrift
+
+$$x^{(k+1)} = (D + L)^{-1}\left(b - Ux^{(k)}\right)$$
+
+Komponentenweise:
+
+$$x_i^{(k+1)} = \frac{1}{a_{ii}} \left( b_i - \sum_{j=1}^{i-1} a_{ij} \cdot x_j^{(k+1)} - \sum_{j=i+1}^{n} a_{ij} \cdot x_j^{(k)} \right)$$
+
+> [!tip] Merke
+> Der entscheidende Unterschied zu Jacobi: In der **ersten Summe** ($j < i$) stehen bereits die **neuen** Werte $x_j^{(k+1)}$, in der **zweiten Summe** ($j > i$) noch die **alten** Werte $x_j^{(k)}$.
+
+### Iterationsmatrix
+
+$$M_{GS} = -(D + L)^{-1} U$$
+
+### Konvergenz und Spektralradius
+
+Wie bei Jacobi konvergiert Gauss-Seidel genau dann, wenn $\rho(M_{GS}) < 1$.
+
+**Hinreichende Kriterien:**
+1. $A$ ist **strikt diagonaldominant** → Gauss-Seidel konvergiert
+2. $A$ ist **symmetrisch und positiv definit** → Gauss-Seidel konvergiert
+
+**Spektralradius im Vergleich:** Fuer dieselbe Matrix gilt oft $\rho(M_{GS}) \approx \rho(M_J)^2$. Das bedeutet: Gauss-Seidel konvergiert ungefaehr **doppelt so schnell** wie Jacobi (gemessen in Iterationen).
+
+Fuer das Beispiel oben: $\rho(M_J) \approx 0.433$, also erwartet man $\rho(M_{GS}) \approx 0.433^2 \approx 0.1875$. Tatsaechlich ist $\rho(M_{GS}) = \frac{3}{16} = 0.1875$ — der Fehler schrumpft pro Schritt auf unter 19%, waehrend er bei Jacobi nur auf 43% schrumpft.
+
+> [!info] Hinweis
+> Gauss-Seidel konvergiert in der Praxis oft **schneller** als Jacobi, da die neuen Werte sofort genutzt werden. Es gibt aber Faelle, in denen Jacobi konvergiert und Gauss-Seidel nicht (und umgekehrt) — der Spektralradius muss fuer jedes Verfahren separat geprueft werden.
+
+### Beispiel
+
+Dasselbe System wie beim Jacobi-Verfahren:
+
+$$\begin{pmatrix} 4 & -1 & 0 \\ -1 & 4 & -1 \\ 0 & -1 & 4 \end{pmatrix} \begin{pmatrix} x_1 \\ x_2 \\ x_3 \end{pmatrix} = \begin{pmatrix} 5 \\ 10 \\ 5 \end{pmatrix}$$
+
+**Iterationsvorschrift** (beachte: neue Werte werden sofort genutzt):
+
+- $x_1^{(k+1)} = \frac{1}{4}\left(5 + x_2^{(k)}\right)$
+- $x_2^{(k+1)} = \frac{1}{4}\left(10 + x_1^{(\mathbf{k+1})} + x_3^{(k)}\right)$
+- $x_3^{(k+1)} = \frac{1}{4}\left(5 + x_2^{(\mathbf{k+1})}\right)$
+
+**Startwert:** $x^{(0)} = (0, 0, 0)^T$
+
+**Iteration 1:**
+
+- $x_1^{(1)} = \frac{1}{4}(5 + 0) = 1.25$
+- $x_2^{(1)} = \frac{1}{4}(10 + \mathbf{1.25} + 0) = 2.8125$
+- $x_3^{(1)} = \frac{1}{4}(5 + \mathbf{2.8125}) = 1.953125$
+
+**Iteration 2:**
+
+- $x_1^{(2)} = \frac{1}{4}(5 + 2.8125) = 1.953125$
+- $x_2^{(2)} = \frac{1}{4}(10 + \mathbf{1.953125} + 1.953125) = 3.47656$
+- $x_3^{(2)} = \frac{1}{4}(5 + \mathbf{3.47656}) = 2.11914$
+
+**Iteration 3:**
+
+- $x_1^{(3)} = \frac{1}{4}(5 + 3.47656) = 2.11914$
+- $x_2^{(3)} = \frac{1}{4}(10 + \mathbf{2.11914} + 2.11914) = 3.55957$
+- $x_3^{(3)} = \frac{1}{4}(5 + \mathbf{3.55957}) = 2.13989$
+
+**Exakte Loesung:** $x = (2,\; 3.5,\; 2)^T$ — Gauss-Seidel ist nach 3 Iterationen bereits naeher dran als Jacobi.
+
+### Vergleich Jacobi vs. Gauss-Seidel
+
+- **Verwendung neuer Werte:** Jacobi erst im naechsten Schritt, Gauss-Seidel sofort
+- **Parallelisierbar:** Jacobi ja (alle Komponenten unabhaengig), Gauss-Seidel nein (sequentielle Abhaengigkeit)
+- **Konvergenzgeschwindigkeit:** Gauss-Seidel oft ca. doppelt so schnell
+- **Konvergenz bei strikt diag.-dom.:** Beide garantiert
+- **Konvergenz bei s.p.d.:** Nur Gauss-Seidel garantiert
+- **Speicher:** Jacobi braucht $x^{(k)}$ und $x^{(k+1)}$, Gauss-Seidel kann in-place aktualisieren
+
+---
+
 ## Zusammenfassung
 
 | Eigenschaft | LU (Gauß) | LU mit Pivot | Cholesky |
@@ -619,6 +933,11 @@ Knapp erfüllt — die Lösung liegt gerade noch im Toleranzbereich. **Aber:** D
 | Pivotsuche | Nein | Ja (Spalte) | Nicht nötig |
 | Aufwand | $\frac{2}{3}n^3$ | $\frac{2}{3}n^3$ | $\frac{1}{3}n^3$ |
 | Stabilität | Kann instabil sein | Numerisch stabil | Stabil |
+
+### Iterative Verfahren
+
+- **Jacobi:** Alle Komponenten mit alten Werten berechnen, konvergiert bei strikt diag.-dom. Matrizen, parallelisierbar
+- **Gauss-Seidel:** Neue Werte sofort nutzen, konvergiert bei strikt diag.-dom. und s.p.d. Matrizen, oft ca. doppelt so schnell wie Jacobi
 
 ### Fehleranalyse-Werkzeuge
 
