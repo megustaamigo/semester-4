@@ -21,7 +21,15 @@ tags:
 6. [[#6. Prager und Oettli (Stoerungsanalyse)|Prager und Oettli]]
 7. [[#7. Jacobi-Verfahren|Jacobi-Verfahren]]
 8. [[#8. Gauss-Seidel-Verfahren|Gauss-Seidel-Verfahren]]
-9. [[#Zusammenfassung|Zusammenfassung]]
+9. [[#9. Relaxationsverfahren (JOR und SOR)|Relaxationsverfahren (JOR und SOR)]]
+10. [[#10. Verfahren des steilsten Abstiegs (Steepest Descent)|Verfahren des steilsten Abstiegs]]
+11. [[#11. Householder-Verfahren (QR-Zerlegung)|Householder-Verfahren (QR-Zerlegung)]]
+12. [[#12. Verfahren der konjugierten Gradienten (CG)|Verfahren der konjugierten Gradienten (CG)]]
+13. [[#13. Gerschgorin-Kreise|Gerschgorin-Kreise]]
+14. [[#14. Eigenwert-Residuum-Abschaetzung (symmetrische Matrizen)|Eigenwert-Residuum-Abschaetzung]]
+15. [[#15. Jacobi-Eigenwertverfahren|Jacobi-Eigenwertverfahren]]
+16. [[#16. Givens-Rotationen und Hessenberg-Reduktion|Givens-Rotationen / Hessenberg]]
+17. [[#Zusammenfassung|Zusammenfassung]]
 
 ---
 
@@ -924,6 +932,714 @@ $$\begin{pmatrix} 4 & -1 & 0 \\ -1 & 4 & -1 \\ 0 & -1 & 4 \end{pmatrix} \begin{p
 
 ---
 
+## 9. Relaxationsverfahren (JOR und SOR)
+
+### Idee
+
+Die Konvergenzgeschwindigkeit von Jacobi und Gauss-Seidel laesst sich oft deutlich verbessern, indem man den neuen Iterationsschritt mit einem **Relaxationsparameter** $\omega$ gewichtet. Statt den vollen Jacobi- oder Gauss-Seidel-Schritt zu nehmen, bildet man eine Konvexkombination zwischen dem alten Wert $x^{(k)}$ und dem neuen Wert.
+
+- **JOR** (Jacobi Over-Relaxation) = Jacobi mit Relaxation
+- **SOR** (Successive Over-Relaxation) = Gauss-Seidel mit Relaxation
+
+> [!tip] Merke
+> Relaxationsverfahren sind **Verallgemeinerungen** von Jacobi und Gauss-Seidel. Setzt man $\omega = 1$, erhaelt man genau das Basisverfahren zurueck. Mit $\omega > 1$ ("Ueberrelaxation") wird der Schritt verstaerkt, mit $\omega < 1$ ("Unterrelaxation") gedaempft.
+
+### Herleitung JOR (Bezug zu Jacobi)
+
+Ausgangspunkt ist der Jacobi-Schritt:
+
+$$x_{J}^{(k+1)} = D^{-1}\left(b - (L+U)x^{(k)}\right)$$
+
+Statt $x^{(k+1)} := x_{J}^{(k+1)}$ zu setzen, mischt man alten und neuen Wert:
+
+$$x^{(k+1)} = (1-\omega) \cdot x^{(k)} + \omega \cdot x_{J}^{(k+1)}$$
+
+Eingesetzt:
+
+$$x^{(k+1)} = (1-\omega)\, x^{(k)} + \omega D^{-1}\!\left(b - (L+U)x^{(k)}\right)$$
+
+Aequivalent ueber das Residuum $r^{(k)} = b - Ax^{(k)}$:
+
+$$x^{(k+1)} = x^{(k)} + \omega D^{-1} r^{(k)}$$
+
+Komponentenweise:
+
+$$x_i^{(k+1)} = (1-\omega)\, x_i^{(k)} + \frac{\omega}{a_{ii}} \left( b_i - \sum_{\substack{j=1 \\ j \neq i}}^{n} a_{ij}\, x_j^{(k)} \right)$$
+
+### Iterationsmatrix JOR
+
+$$M_{JOR}(\omega) = (1-\omega)I + \omega M_J = I - \omega D^{-1} A$$
+
+Damit lautet die Iteration: $x^{(k+1)} = M_{JOR}(\omega)\, x^{(k)} + \omega D^{-1} b$.
+
+> [!info] Hinweis
+> Fuer $\omega = 1$ ist $M_{JOR}(1) = M_J$ — also genau das Jacobi-Verfahren. JOR ist somit eine **echte Verallgemeinerung** von Jacobi.
+
+### Herleitung SOR (Bezug zu Gauss-Seidel)
+
+Analog zu JOR mischt SOR den Gauss-Seidel-Schritt mit dem alten Wert. Komponentenweise:
+
+$$x_i^{(k+1)} = (1-\omega)\, x_i^{(k)} + \frac{\omega}{a_{ii}} \left( b_i - \sum_{j=1}^{i-1} a_{ij}\, x_j^{(k+1)} - \sum_{j=i+1}^{n} a_{ij}\, x_j^{(k)} \right)$$
+
+Iterationsmatrix:
+
+$$M_{SOR}(\omega) = (D + \omega L)^{-1}\!\left((1-\omega)D - \omega U\right)$$
+
+Fuer $\omega = 1$ ergibt sich genau Gauss-Seidel.
+
+### Konvergenz und Spektralradius
+
+Wie bei Jacobi/Gauss-Seidel gilt: Konvergenz genau dann, wenn $\rho(M(\omega)) < 1$.
+
+**Notwendige Bedingung (Satz von Kahan):** Damit SOR/JOR ueberhaupt konvergieren kann, muss gelten:
+
+$$0 < \omega < 2$$
+
+Beweisidee: $\det(M_{SOR}(\omega)) = (1-\omega)^n$, also $\rho(M_{SOR}(\omega)) \geq |1-\omega|$. Fuer $\omega \notin (0,2)$ ist $|1-\omega| \geq 1$ und das Verfahren divergiert.
+
+**Hinreichendes Kriterium:** Ist $A$ **symmetrisch und positiv definit**, dann konvergiert SOR fuer **jedes** $\omega \in (0, 2)$ (Satz von Ostrowski-Reich).
+
+### Wahl des Relaxationsparameters
+
+| $\omega$ | Bezeichnung | Wirkung |
+|---|---|---|
+| $\omega < 1$ | Unterrelaxation | Daempft den Schritt — fuer Verfahren, die sonst oszillieren oder divergieren |
+| $\omega = 1$ | keine Relaxation | Reduziert sich auf Jacobi (JOR) bzw. Gauss-Seidel (SOR) |
+| $1 < \omega < 2$ | Ueberrelaxation | Beschleunigt die Konvergenz — typischer Anwendungsfall |
+
+**Optimaler Parameter $\omega_{opt}$** minimiert $\rho(M(\omega))$. Fuer eine wichtige Klasse von Matrizen (konsistent geordnet, blocktridiagonal — z.B. aus Diskretisierungen partieller DGL) gilt der **Satz von Young**:
+
+$$\omega_{opt} = \frac{2}{1 + \sqrt{1 - \rho(M_J)^2}}$$
+
+Mit zugehoerigem Spektralradius:
+
+$$\rho(M_{SOR}(\omega_{opt})) = \omega_{opt} - 1$$
+
+> [!warning] Achtung
+> Die Formel von Young setzt voraus, dass $A$ konsistent geordnet ist und $M_J$ nur reelle Eigenwerte hat. Fuer beliebige Matrizen muss $\omega_{opt}$ numerisch (z.B. durch Probieren) gefunden werden.
+
+### Beispiel: JOR fuer das Standard-Beispiel
+
+Wieder das System aus dem Jacobi-Kapitel:
+
+$$A = \begin{pmatrix} 4 & -1 & 0 \\ -1 & 4 & -1 \\ 0 & -1 & 4 \end{pmatrix}, \quad b = \begin{pmatrix} 5 \\ 10 \\ 5 \end{pmatrix}$$
+
+Jacobi-Spektralradius (aus Kapitel 7): $\rho(M_J) = \frac{\sqrt{3}}{4} \approx 0.433$.
+
+**JOR-Iterationsvorschrift** (komponentenweise):
+
+$$x_1^{(k+1)} = (1-\omega)\, x_1^{(k)} + \frac{\omega}{4}\!\left(5 + x_2^{(k)}\right)$$
+
+$$x_2^{(k+1)} = (1-\omega)\, x_2^{(k)} + \frac{\omega}{4}\!\left(10 + x_1^{(k)} + x_3^{(k)}\right)$$
+
+$$x_3^{(k+1)} = (1-\omega)\, x_3^{(k)} + \frac{\omega}{4}\!\left(5 + x_2^{(k)}\right)$$
+
+**Wahl von $\omega = 1.1$ (leichte Ueberrelaxation), Startwert $x^{(0)} = (0,0,0)^T$:**
+
+Iteration 1:
+- $x_1^{(1)} = 0 + \frac{1.1}{4}(5+0) = 1.375$
+- $x_2^{(1)} = 0 + \frac{1.1}{4}(10+0+0) = 2.75$
+- $x_3^{(1)} = 0 + \frac{1.1}{4}(5+0) = 1.375$
+
+Iteration 2:
+- $x_1^{(2)} = -0.1 \cdot 1.375 + \frac{1.1}{4}(5 + 2.75) = -0.1375 + 2.13125 = 1.99375$
+- $x_2^{(2)} = -0.1 \cdot 2.75 + \frac{1.1}{4}(10 + 1.375 + 1.375) = -0.275 + 3.5063 = 3.23125$
+- $x_3^{(2)} = -0.1 \cdot 1.375 + \frac{1.1}{4}(5 + 2.75) = 1.99375$
+
+**Exakte Loesung:** $x = (2,\; 3.5,\; 2)^T$ — bereits nach 2 Iterationen ist $x_1$ und $x_3$ deutlich naeher an der Loesung als Jacobi nach 3 Iterationen.
+
+### Vergleich Jacobi / Gauss-Seidel / JOR / SOR
+
+- **Jacobi** ($\omega = 1$ in JOR): konvergiert bei strikt diag.-dom., parallelisierbar
+- **JOR** ($\omega \neq 1$): kann Jacobi beschleunigen oder stabilisieren, weiterhin parallelisierbar
+- **Gauss-Seidel** ($\omega = 1$ in SOR): nutzt neue Werte sofort, ca. doppelt so schnell wie Jacobi
+- **SOR** ($1 < \omega < 2$): in der Praxis das schnellste der vier Verfahren — fuer s.p.d. Matrizen mit gut gewaehltem $\omega$ Faktor 10–100 schneller als Gauss-Seidel
+
+> [!success] Best Practice
+> Fuer praktische Anwendungen (z.B. Loesung diskretisierter PDEs) ist **SOR mit optimal gewaehltem $\omega$** dem reinen Gauss-Seidel deutlich ueberlegen. JOR wird seltener eingesetzt, ist aber theoretisch nuetzlich, um den Uebergang Jacobi → Relaxation zu verstehen.
+
+---
+
+## 10. Verfahren des steilsten Abstiegs (Steepest Descent)
+
+> [!info] Klausurrelevanz
+> Steepest Descent ist **eher unwichtig fuer die Klausur** — es wird in der Vorlesung hauptsaechlich als **konzeptionelle Vorstufe zum CG-Verfahren** behandelt. Wichtig sind die **Idee** (Loesen via Minimierung), die **Aequivalenz Residuum ↔ negativer Gradient** und die **Schwaeche** (Zickzack bei schlechter Kondition), weil das CG motiviert. Das detaillierte Durchrechnen ist klausurfern.
+
+### Idee
+
+Das Verfahren des steilsten Abstiegs ist ein **iteratives Verfahren** zur Loesung linearer Gleichungssysteme $Ax = b$ mit **symmetrisch positiv definiter** Matrix $A$. Anders als Jacobi/Gauss-Seidel basiert es nicht auf einer Matrixzerlegung, sondern auf einer **Optimierungsformulierung**: Man minimiert ein quadratisches Funktional und folgt in jedem Schritt der Richtung des steilsten Abstiegs.
+
+### Aequivalenz: Lineares System ↔ Minimierungsproblem
+
+Fuer s.p.d. Matrizen gilt:
+
+$$Ax = b \quad \Longleftrightarrow \quad x = \arg\min_{y \in \mathbb{R}^n} f(y)$$
+
+mit dem **quadratischen Funktional**:
+
+$$f(y) = \tfrac{1}{2}\, y^T A y - b^T y$$
+
+> [!quote] Definition
+> Fuer s.p.d. $A$ ist $f(y) = \tfrac{1}{2} y^T A y - b^T y$ eine streng konvexe Funktion mit eindeutigem Minimum $x^* = A^{-1}b$. Die Loesung des Gleichungssystems ist also genau der Minimierer von $f$.
+
+**Gradient:** $\nabla f(y) = Ay - b = -r(y)$ mit dem **Residuum** $r(y) = b - Ay$.
+
+> [!tip] Merke
+> Der **negative Gradient** $-\nabla f(y) = b - Ay = r$ ist die Richtung des **steilsten Abstiegs** und gleichzeitig genau das **Residuum**. Daher: in Richtung Residuum laufen = in Richtung des steilsten Abstiegs laufen.
+
+### Algorithmus
+
+In jedem Schritt:
+1. Berechne Residuum $r^{(k)} = b - Ax^{(k)}$ (= Suchrichtung)
+2. Bestimme **optimale Schrittweite** $\alpha_k$ durch eindimensionale Minimierung von $f(x^{(k)} + \alpha\, r^{(k)})$
+3. Update: $x^{(k+1)} = x^{(k)} + \alpha_k\, r^{(k)}$
+
+**Optimale Schrittweite (exakte Liniensuche):**
+
+$$\frac{d}{d\alpha} f(x^{(k)} + \alpha\, r^{(k)}) = 0 \quad \Longrightarrow \quad \alpha_k = \frac{(r^{(k)})^T r^{(k)}}{(r^{(k)})^T A\, r^{(k)}}$$
+
+### Iterationsvorschrift
+
+$$\boxed{\;\begin{aligned}
+r^{(k)} &= b - A x^{(k)} \\
+\alpha_k &= \frac{(r^{(k)})^T r^{(k)}}{(r^{(k)})^T A\, r^{(k)}} \\
+x^{(k+1)} &= x^{(k)} + \alpha_k\, r^{(k)}
+\end{aligned}\;}$$
+
+**Effiziente Update-Formel fuer das Residuum** (spart eine Matrix-Vektor-Multiplikation):
+
+$$r^{(k+1)} = r^{(k)} - \alpha_k\, A r^{(k)}$$
+
+(folgt aus $r^{(k+1)} = b - A(x^{(k)} + \alpha_k r^{(k)}) = r^{(k)} - \alpha_k A r^{(k)}$)
+
+> [!info] Hinweis
+> Pro Iteration ist nur **eine** Matrix-Vektor-Multiplikation $A r^{(k)}$ noetig. Aufwand pro Schritt: $O(n^2)$ fuer dichte $A$, $O(n)$ fuer duenn besetzte $A$.
+
+### Voraussetzungen
+
+- $A$ **symmetrisch und positiv definit** (s.p.d.)
+
+> [!warning] Achtung
+> Ohne s.p.d. ist das Verfahren nicht anwendbar:
+> - **Nicht symmetrisch** → $A^T \neq A$, Funktional nicht "passend" zu $A$
+> - **Nicht positiv definit** → $f$ hat kein Minimum, Suchrichtung kann hochlaufen statt absteigen
+
+### Konvergenz
+
+Das Verfahren konvergiert fuer **jede** s.p.d. Matrix und **jeden** Startwert. Die Konvergenzrate haengt entscheidend von der **Konditionszahl** $\kappa = \kappa_2(A) = \lambda_{\max}/\lambda_{\min}$ ab:
+
+$$\|x^{(k)} - x^*\|_A \leq \left(\frac{\kappa - 1}{\kappa + 1}\right)^k \|x^{(0)} - x^*\|_A$$
+
+mit der **A-Norm** $\|y\|_A = \sqrt{y^T A y}$.
+
+| Konditionszahl $\kappa$ | Konvergenzfaktor $\frac{\kappa-1}{\kappa+1}$ | Verhalten |
+|---|---|---|
+| $\kappa = 1$ | $0$ | Konvergenz in einem Schritt |
+| $\kappa = 10$ | $\approx 0.82$ | Maessig schnell |
+| $\kappa = 100$ | $\approx 0.98$ | Sehr langsam |
+| $\kappa \to \infty$ | $\to 1$ | Praktisch keine Konvergenz |
+
+> [!warning] Achtung
+> Bei **schlecht konditionierten** Matrizen ($\kappa \gg 1$) konvergiert Steepest Descent extrem langsam — das Verfahren "zickzackt" durch ein langgestrecktes Tal. In solchen Faellen ist das **CG-Verfahren** (Conjugate Gradient) deutlich besser.
+
+### Geometrische Interpretation
+
+Die Hoehenlinien von $f$ sind **Ellipsoide**, deren Halbachsen den Eigenvektoren von $A$ entsprechen und deren Halbachsenlaengen umgekehrt proportional zu $\sqrt{\lambda_i}$ sind.
+
+- Bei $\kappa \approx 1$: Hoehenlinien sind nahezu Kreise → der Gradient zeigt fast direkt zum Minimum
+- Bei $\kappa \gg 1$: Hoehenlinien sind langgestreckte Ellipsen → der Gradient zeigt fast senkrecht zur langen Achse → Zickzack-Verlauf
+
+### Beispiel
+
+Gegeben (s.p.d., aus Kapitel 7):
+
+$$A = \begin{pmatrix} 4 & -1 & 0 \\ -1 & 4 & -1 \\ 0 & -1 & 4 \end{pmatrix}, \quad b = \begin{pmatrix} 5 \\ 10 \\ 5 \end{pmatrix}, \quad x^{(0)} = \begin{pmatrix} 0 \\ 0 \\ 0 \end{pmatrix}$$
+
+**Iteration 1:**
+
+$$r^{(0)} = b - A x^{(0)} = b = \begin{pmatrix} 5 \\ 10 \\ 5 \end{pmatrix}$$
+
+$$A r^{(0)} = \begin{pmatrix} 4\cdot 5 - 10 \\ -5 + 40 - 5 \\ -10 + 20 \end{pmatrix} = \begin{pmatrix} 10 \\ 30 \\ 10 \end{pmatrix}$$
+
+$$(r^{(0)})^T r^{(0)} = 25 + 100 + 25 = 150$$
+
+$$(r^{(0)})^T A r^{(0)} = 5\cdot 10 + 10\cdot 30 + 5\cdot 10 = 400$$
+
+$$\alpha_0 = \frac{150}{400} = 0.375$$
+
+$$x^{(1)} = x^{(0)} + 0.375 \cdot r^{(0)} = \begin{pmatrix} 1.875 \\ 3.75 \\ 1.875 \end{pmatrix}$$
+
+**Iteration 2:**
+
+$$r^{(1)} = r^{(0)} - 0.375 \cdot A r^{(0)} = \begin{pmatrix} 5 \\ 10 \\ 5 \end{pmatrix} - 0.375 \begin{pmatrix} 10 \\ 30 \\ 10 \end{pmatrix} = \begin{pmatrix} 1.25 \\ -1.25 \\ 1.25 \end{pmatrix}$$
+
+$$A r^{(1)} = \begin{pmatrix} 4\cdot 1.25 - (-1.25) \\ -1.25 + 4\cdot(-1.25) - 1.25 \\ -(-1.25) + 4\cdot 1.25 \end{pmatrix} = \begin{pmatrix} 6.25 \\ -7.5 \\ 6.25 \end{pmatrix}$$
+
+$$(r^{(1)})^T r^{(1)} = 1.5625 + 1.5625 + 1.5625 = 4.6875$$
+
+$$(r^{(1)})^T A r^{(1)} = 1.25\cdot 6.25 + (-1.25)\cdot (-7.5) + 1.25\cdot 6.25 = 7.8125 + 9.375 + 7.8125 = 25$$
+
+$$\alpha_1 = \frac{4.6875}{25} = 0.1875$$
+
+$$x^{(2)} = \begin{pmatrix} 1.875 \\ 3.75 \\ 1.875 \end{pmatrix} + 0.1875 \begin{pmatrix} 1.25 \\ -1.25 \\ 1.25 \end{pmatrix} = \begin{pmatrix} 2.1094 \\ 3.5156 \\ 2.1094 \end{pmatrix}$$
+
+**Exakte Loesung:** $x^* = (15/7,\; 25/7,\; 15/7)^T \approx (2.1429,\; 3.5714,\; 2.1429)^T$ — bereits nach 2 Iterationen sehr nah dran.
+
+### Eigenschaften aufeinanderfolgender Suchrichtungen
+
+Aus der Optimalitaetsbedingung folgt:
+
+$$(r^{(k+1)})^T r^{(k)} = 0$$
+
+> [!tip] Merke
+> Aufeinanderfolgende Residuen (Suchrichtungen) sind **orthogonal**. Geometrisch bedeutet das: Man laeuft solange in Richtung $r^{(k)}$, bis $f$ in dieser Richtung minimal ist — der naechste Gradient steht dann senkrecht auf dem alten. Genau das fuehrt zum Zickzack-Effekt bei schlechter Kondition.
+
+### Abbruchkriterium
+
+Wie bei den anderen iterativen Verfahren:
+- $\|r^{(k)}\| < \varepsilon$ (Residuum klein)
+- $\|x^{(k+1)} - x^{(k)}\| < \varepsilon$ (Aenderung klein)
+- maximale Iterationszahl
+
+### Vergleich mit Jacobi / Gauss-Seidel / SOR
+
+| Eigenschaft | Jacobi/GS/SOR | Steepest Descent |
+|---|---|---|
+| Voraussetzung | strikt diag.-dom. bzw. s.p.d. | nur s.p.d. |
+| Suchrichtung | feste Komponentenrichtungen | Residuum (Gradient) |
+| Schrittweite | implizit (durch Verfahren) | explizit, optimal pro Schritt |
+| Konvergenzrate | $\rho(M)$ | $\frac{\kappa - 1}{\kappa + 1}$ |
+| Sensitiv auf Kondition | maessig | sehr stark |
+| Erweiterung | JOR/SOR (Relaxation) | CG-Verfahren (konjugierte Richtungen) |
+
+> [!success] Best Practice
+> Steepest Descent ist konzeptionell wichtig als **Vorstufe zum CG-Verfahren** (Conjugate Gradient), das den Zickzack-Effekt vermeidet, indem es Suchrichtungen waehlt, die **A-konjugiert** statt nur orthogonal sind. Fuer s.p.d. Matrizen ist CG in der Praxis fast immer die bessere Wahl.
+
+---
+
+## 11. Householder-Verfahren (QR-Zerlegung)
+
+> [!info] Klausurrelevanz
+> Householder ist das **Standardverfahren zur Berechnung der QR-Zerlegung**. Wichtig fuer die Klausur sind: die **Idee der Spiegelung** (Reflexion an einer Hyperebene), die **Konstruktion des Householder-Vektors** $v$ inkl. Vorzeichenwahl gegen Ausloeschung, die **Eigenschaften** ($H$ symmetrisch und orthogonal), der **Aufbau der QR-Zerlegung** Spalte fuer Spalte sowie die **Anwendung** auf $Ax = b$ und auf das **lineare Ausgleichsproblem**.
+
+### Idee
+
+Das Householder-Verfahren berechnet die **QR-Zerlegung** einer Matrix $A \in \mathbb{R}^{m \times n}$:
+
+$$A = Q R$$
+
+mit:
+- $Q \in \mathbb{R}^{m \times m}$ **orthogonal** ($Q^T Q = I$)
+- $R \in \mathbb{R}^{m \times n}$ **obere Dreiecksmatrix** (bei $m > n$: oberes $n \times n$-Block dreieckig, darunter Nullen)
+
+Die Idee: $A$ wird Spalte fuer Spalte durch **Spiegelungen** (Householder-Reflexionen) auf obere Dreiecksgestalt gebracht. Jede Spiegelung erzeugt unterhalb der Diagonale in einer Spalte Nullen.
+
+> [!quote] Definition
+> Eine **Householder-Reflexion** spiegelt einen Vektor an einer Hyperebene durch den Ursprung mit Normale $v$. Die zugehoerige Matrix ist
+> $$H = I - 2 \frac{v v^T}{v^T v}$$
+> $H$ ist symmetrisch ($H^T = H$), orthogonal ($H^T H = I$) und involutorisch ($H^2 = I$).
+
+### Konstruktion des Householder-Vektors
+
+Ziel: zu einem gegebenen Vektor $x \in \mathbb{R}^k$ eine Reflexion $H$ konstruieren, sodass $Hx$ ein Vielfaches von $e_1 = (1, 0, \dots, 0)^T$ ist — also alle Komponenten ausser der ersten zu Null werden.
+
+Setze:
+
+$$v = x + \sigma\, \|x\|_2\, e_1, \qquad \sigma = \operatorname{sign}(x_1)$$
+
+(bei $x_1 = 0$ waehle $\sigma = 1$). Dann gilt:
+
+$$H x = -\sigma\, \|x\|_2\, e_1$$
+
+> [!warning] Achtung
+> Die Vorzeichenwahl $\sigma = \operatorname{sign}(x_1)$ ist entscheidend: bei $\sigma = -\operatorname{sign}(x_1)$ wuerde im ersten Eintrag von $v$ Subtraktion gleich grosser Zahlen auftreten → **numerische Ausloeschung**. Mit der "gleiches Vorzeichen"-Wahl addieren sich die Betraege und $\|v\|$ wird gross genug, damit die Division $vv^T / v^T v$ stabil bleibt.
+
+> [!tip] Merke
+> $H$ wird **nie explizit aufgestellt**. Stattdessen speichert man nur $v$ (bzw. $\beta = 2/(v^T v)$) und wendet die Reflexion via
+> $$H y = y - \beta\, v\, (v^T y)$$
+> an — das ist eine Skalarproduktbildung plus eine Vektoraddition pro Anwendung, also $O(k)$ statt $O(k^2)$.
+
+### Eigenschaften
+
+| Eigenschaft | Bedeutung |
+|---|---|
+| $H = H^T$ | symmetrisch |
+| $H^T H = I$ | orthogonal — laengen- und winkeltreu |
+| $H^2 = I$ | involutorisch (Spiegelung zweimal angewandt = Identitaet) |
+| $\det(H) = -1$ | orientierungsumkehrend |
+| $\|Hy\|_2 = \|y\|_2$ | bewahrt die 2-Norm |
+
+> [!tip] Merke
+> Weil $Q$ orthogonal ist, gilt $\|Qy\|_2 = \|y\|_2$ und $\kappa_2(Q) = 1$. Orthogonale Transformationen **verstaerken keine Fehler** — das ist der Grund fuer die hervorragende numerische Stabilitaet des Householder-Verfahrens.
+
+### Algorithmus zur QR-Zerlegung
+
+Fuer $A \in \mathbb{R}^{m \times n}$ mit $m \geq n$ werden $n$ (bzw. $n-1$ bei $m = n$) Householder-Reflexionen nacheinander angewandt:
+
+**Schritt $k$** (fuer $k = 1, \dots, n$):
+1. Betrachte die $k$-te Spalte von $A^{(k-1)}$ unterhalb der Diagonale: $x = (a^{(k-1)}_{kk}, a^{(k-1)}_{k+1,k}, \dots, a^{(k-1)}_{mk})^T \in \mathbb{R}^{m-k+1}$
+2. Bilde $v_k = x + \operatorname{sign}(x_1)\, \|x\|_2\, e_1$
+3. Definiere $\tilde H_k = I_{m-k+1} - \frac{2 v_k v_k^T}{v_k^T v_k}$ und blockerweitere zu $H_k = \begin{pmatrix} I_{k-1} & 0 \\ 0 & \tilde H_k \end{pmatrix} \in \mathbb{R}^{m \times m}$
+4. Update: $A^{(k)} = H_k\, A^{(k-1)}$ — dadurch werden in Spalte $k$ alle Eintraege unterhalb der Diagonale zu Null
+
+Nach $n$ Schritten ist $A^{(n)} = R$ obere Dreiecksmatrix und
+
+$$H_n H_{n-1} \cdots H_1\, A = R \quad \Longrightarrow \quad Q^T = H_n \cdots H_1, \quad Q = H_1 H_2 \cdots H_n$$
+
+(beachte: jedes $H_k$ ist symmetrisch, deshalb dreht sich beim Transponieren nur die Reihenfolge).
+
+```mermaid
+flowchart LR
+    A["A"] -->|"H_1"| A1["x x x x<br>0 x x x<br>0 x x x<br>0 x x x"]
+    A1 -->|"H_2"| A2["x x x x<br>0 x x x<br>0 0 x x<br>0 0 x x"]
+    A2 -->|"H_3"| R["x x x x<br>0 x x x<br>0 0 x x<br>0 0 0 x<br>= R"]
+```
+
+### Loesung von $A x = b$ via QR
+
+Sei $A \in \mathbb{R}^{n \times n}$ regulaer mit $A = QR$:
+
+$$A x = b \;\Longleftrightarrow\; Q R x = b \;\Longleftrightarrow\; R x = Q^T b$$
+
+**Algorithmus:**
+1. Berechne QR-Zerlegung $A = QR$ via Householder
+2. Berechne $c = Q^T b$ (durch sukzessives Anwenden der Reflexionen: $c = H_n \cdots H_1\, b$)
+3. **Rueckwaertseinsetzen** loest $R x = c$
+
+> [!info] Hinweis
+> Schritt 2 nutzt die Faktorisierung: $Q^T = H_n \cdots H_1$ — also $b$ einfach durch die gleiche Reihe von Reflexionen schicken, die $A$ auf $R$ gebracht haben.
+
+### Anwendung: Lineares Ausgleichsproblem (Least Squares)
+
+Fuer ueberbestimmtes System ($A \in \mathbb{R}^{m \times n}$ mit $m > n$, vollen Rang):
+
+$$\min_{x \in \mathbb{R}^n} \|A x - b\|_2$$
+
+Mit $A = QR$, $R = \begin{pmatrix} R_1 \\ 0 \end{pmatrix}$ ($R_1 \in \mathbb{R}^{n \times n}$ obere Dreiecksmatrix), $Q^T b = \begin{pmatrix} c_1 \\ c_2 \end{pmatrix}$:
+
+$$\|A x - b\|_2^2 = \|Q^T(A x - b)\|_2^2 = \|R x - Q^T b\|_2^2 = \|R_1 x - c_1\|_2^2 + \|c_2\|_2^2$$
+
+> [!success] Best Practice
+> $\|c_2\|_2^2$ haengt nicht von $x$ ab. Das Minimum wird also bei $R_1 x = c_1$ erreicht (Rueckwaertseinsetzen). Das Residuum betraegt genau $\|c_2\|_2$. Householder-QR ist der **numerisch stabile Standardweg** fuer lineare Ausgleichsprobleme — viel besser als die Normalengleichung $A^T A x = A^T b$ (die quadriert die Konditionszahl).
+
+### Aufwand und Stabilitaet
+
+| Verfahren | Aufwand (dichte $n \times n$-Matrix) | Bemerkung |
+|---|---|---|
+| LU (Gauss) | $\tfrac{2}{3} n^3$ | schnell, kann instabil sein |
+| LU mit Pivot | $\tfrac{2}{3} n^3$ | numerisch stabil |
+| Cholesky | $\tfrac{1}{3} n^3$ | nur s.p.d., am schnellsten |
+| **Householder-QR** | $\tfrac{4}{3} n^3$ | doppelt so teuer wie LU, **sehr stabil** |
+
+> [!success] Best Practice
+> Householder ist **doppelt so teuer wie LU**, dafuer aber numerisch ausgezeichnet stabil und ohne Pivotsuche anwendbar. Faustregel:
+> - $A$ regulaer und gut konditioniert → **LU mit Pivot** (schneller)
+> - $A$ s.p.d. → **Cholesky** (am schnellsten)
+> - $A$ schlecht konditioniert oder Ausgleichsproblem ($m > n$) → **Householder-QR**
+
+### Beispiel: Reflexion in $\mathbb{R}^2$
+
+Spiegele $x = \begin{pmatrix} 3 \\ 4 \end{pmatrix}$ auf ein Vielfaches von $e_1$.
+
+**1. Norm:** $\|x\|_2 = \sqrt{9 + 16} = 5$
+
+**2. Householder-Vektor:** $\sigma = \operatorname{sign}(3) = +1$
+
+$$v = x + \sigma \|x\|\, e_1 = \begin{pmatrix} 3 \\ 4 \end{pmatrix} + 5 \begin{pmatrix} 1 \\ 0 \end{pmatrix} = \begin{pmatrix} 8 \\ 4 \end{pmatrix}$$
+
+**3. Skalar:** $v^T v = 64 + 16 = 80$, also $\beta = 2/80 = 1/40$
+
+**4. Householder-Matrix:**
+
+$$H = I - \frac{1}{40} \begin{pmatrix} 64 & 32 \\ 32 & 16 \end{pmatrix} = \begin{pmatrix} 1 - 8/5 & -4/5 \\ -4/5 & 1 - 2/5 \end{pmatrix} = \begin{pmatrix} -3/5 & -4/5 \\ -4/5 & 3/5 \end{pmatrix}$$
+
+**5. Anwendung:**
+
+$$H x = \begin{pmatrix} -3/5 & -4/5 \\ -4/5 & 3/5 \end{pmatrix} \begin{pmatrix} 3 \\ 4 \end{pmatrix} = \begin{pmatrix} -9/5 - 16/5 \\ -12/5 + 12/5 \end{pmatrix} = \begin{pmatrix} -5 \\ 0 \end{pmatrix} = -\|x\|_2\, e_1 \quad \checkmark$$
+
+Erwartet ist $H x = -\sigma \|x\|_2 e_1 = -5 e_1$ — passt.
+
+### Zusammenfassung Householder
+
+> [!tip] Merke
+> 1. **Ziel:** $A = QR$ mit $Q$ orthogonal, $R$ obere Dreiecksmatrix
+> 2. **Werkzeug:** Householder-Reflexion $H = I - 2 vv^T / v^T v$ — symmetrisch, orthogonal, $H^2 = I$
+> 3. **Vektorwahl:** $v = x + \operatorname{sign}(x_1) \|x\|_2 e_1$ (Vorzeichen gegen Ausloeschung)
+> 4. **Algorithmus:** $n$ Reflexionen erzeugen Spalte fuer Spalte Nullen unterhalb der Diagonale
+> 5. **Loesen:** $R x = Q^T b$ via Rueckwaertseinsetzen
+> 6. **Aufwand:** $\tfrac{4}{3} n^3$ (doppelt LU), dafuer **sehr stabil** und **ohne Pivot**
+> 7. **Killerapplikation:** lineares Ausgleichsproblem $\min \|Ax - b\|_2$
+
+---
+
+## 12. Verfahren der konjugierten Gradienten (CG)
+
+> [!info] Klausurrelevanz
+> CG ist das Standard-Iterativverfahren fuer **s.p.d.** Systeme. Wichtig: **Voraussetzung** ($A$ s.p.d.), **A-konjugierte Suchrichtungen**, **endliche Termination** (theoretisch nach $n$ Schritten), **Konvergenzrate** $\propto \sqrt{\kappa}$ (statt $\kappa$ wie bei Steepest Descent), **Algorithmus** (Update von $x_k$, $r_k$, $p_k$).
+
+### Idee
+
+CG loest $Ax = b$ mit $A$ s.p.d. ueber das aequivalente Minimierungsproblem $\min_x \tfrac{1}{2} x^T A x - b^T x$. Im Unterschied zum Steepest Descent werden die Suchrichtungen so gewaehlt, dass sie paarweise **A-konjugiert** sind:
+
+$$p_i^T A p_j = 0 \quad \text{fuer } i \neq j.$$
+
+Damit wird der **Zickzack-Effekt** des Steepest Descent vermieden: in $n$ Schritten (exakt) findet CG die Loesung — in der Praxis viel frueher.
+
+### Algorithmus
+
+```text
+x_0 beliebig (z.B. 0); r_0 = b - A x_0; p_0 = r_0
+fuer k = 0, 1, 2, ...
+    alpha_k  = (r_k^T r_k) / (p_k^T A p_k)
+    x_{k+1}  = x_k + alpha_k p_k
+    r_{k+1}  = r_k - alpha_k A p_k
+    falls ||r_{k+1}|| klein -> stop
+    beta_k   = (r_{k+1}^T r_{k+1}) / (r_k^T r_k)
+    p_{k+1}  = r_{k+1} + beta_k p_k
+```
+
+Pro Iteration genau **ein** Matrix-Vektor-Produkt $A p_k$ — entscheidend bei Sparse-Matrizen.
+
+### Konvergenz
+
+> [!quote] Fehlerabschaetzung in der A-Norm
+> $$\|x - x_k\|_A \leq 2 \left(\frac{\sqrt{\kappa} - 1}{\sqrt{\kappa} + 1}\right)^k \|x - x_0\|_A$$
+
+Vergleich:
+
+| Verfahren | Konvergenzfaktor pro Schritt |
+|---|---|
+| Steepest Descent | $\frac{\kappa - 1}{\kappa + 1}$ |
+| CG              | $\frac{\sqrt{\kappa} - 1}{\sqrt{\kappa} + 1}$ |
+
+Bei $\kappa = 10^4$: SD braucht $\sim 10^4$ Schritte, CG nur $\sim 100$.
+
+### Iterationsanzahl bei der Membran-Matrix
+
+Fuer das diskretisierte Poisson-Problem auf einem $m \times m$ Gitter gilt $\kappa(A) \sim \mathcal{O}(m^2)$, also CG-Iterationen $\sim \mathcal{O}(m)$:
+
+| $m$ | $n = m^2$ | CG-Iterationen (bis $\|r\|/\|r_0\| \leq 10^{-6}$) |
+|---|---|---|
+| 50  | 2500  | 79 |
+| 100 | 10000 | 159 |
+| 200 | 40000 | 320 |
+
+> [!tip] Merke
+> CG ist **theoretisch direkt** (max. $n$ Iterationen) und **praktisch iterativ** (man stoppt frueher). Bei dichten Matrizen kostet CG aber $\mathcal{O}(n^3)$ — direkte Verfahren sind dann besser. **Killerapplikation:** grosse **sparse** s.p.d. Systeme (FEM, Bildverarbeitung, ...).
+
+> [!warning] Achtung
+> CG funktioniert **nur** fuer s.p.d. Matrizen. Fuer nicht-symmetrische oder indefinite Systeme: **GMRES**, **BiCGStab**, **MINRES** (s.p. nicht-pos.def.), etc.
+
+### Praktische Hinweise
+
+- Bei `scipy.sparse`-Matrizen `A.dot(p)` verwenden (nicht `A @ p`, das ist fuer dichte Matrizen).
+- **Praeconditionierung** (PCG) ist meistens entscheidend: man arbeitet mit $M^{-1} A$ wobei $M \approx A$ leicht invertierbar (z.B. unvollstaendige Cholesky). Reduziert effektives $\kappa$ massiv.
+- Bei verlorener Orthogonalitaet (lange Iterationen, Rundungsfehler) kann ein gelegentlicher **Restart** ($p_0 = r_0$) helfen.
+
+---
+
+## 13. Gerschgorin-Kreise
+
+> [!info] Klausurrelevanz
+> Einfaches Werkzeug fuer **a-priori-Lokalisierung** von Eigenwerten. Wichtig: **Definition** der Kreise, **Anwendung** auf $A$ **und** $A^T$ (Schnitt liefert die schaerfere Schranke), **Skizze**.
+
+### Satz von Gerschgorin
+
+Fuer $A \in \mathbb{R}^{n \times n}$ (oder $\mathbb{C}^{n \times n}$) liegen alle Eigenwerte in der Vereinigung der **Gerschgorin-Kreise**:
+
+$$K_i = \{z \in \mathbb{C} : |z - a_{ii}| \leq R_i\}, \quad R_i = \sum_{j \neq i} |a_{ij}| \quad (\text{Zeilensumme ohne Diagonale}).$$
+
+$$\sigma(A) \subseteq \bigcup_{i=1}^{n} K_i.$$
+
+> [!tip] Verschaerfung
+> Da $\sigma(A) = \sigma(A^T)$, kann man den Satz auch auf $A^T$ anwenden — die Radien sind dann die **Spaltensummen** $C_j = \sum_{i \neq j} |a_{ij}|$. Es gilt $\sigma(A) \subseteq (\bigcup K_i^Z) \cap (\bigcup K_j^S)$.
+
+### Beispiel
+
+$$A = \begin{pmatrix} 4 & -2 & 3 \\ 3 & 2 & -2 \\ 2 & -1 & 3 \end{pmatrix}.$$
+
+**Zeilen-Kreise:**
+
+| $i$ | Zentrum | Radius | Intervall reell |
+|---|---|---|---|
+| 1 | $4$ | $5$ | $[-1, 9]$ |
+| 2 | $2$ | $5$ | $[-3, 7]$ |
+| 3 | $3$ | $3$ | $[0, 6]$ |
+
+**Spalten-Kreise:**
+
+| $j$ | Zentrum | Radius | Intervall reell |
+|---|---|---|---|
+| 1 | $4$ | $5$ | $[-1, 9]$ |
+| 2 | $2$ | $3$ | $[-1, 5]$ |
+| 3 | $3$ | $5$ | $[-2, 8]$ |
+
+Reelle EW von $A$ liegen im Schnitt $[-2, 9]$.
+
+> [!success] Best Practice
+> Wenn ein Gerschgorin-Kreis **isoliert** von allen anderen liegt, enthaelt er **genau einen** Eigenwert (Stetigkeitsargument).
+
+---
+
+## 14. Eigenwert-Residuum-Abschaetzung (symmetrische Matrizen)
+
+> [!info] Klausurrelevanz
+> A-posteriori-Werkzeug fuer Naeherungseigenwerte. Beweis ueber orthonormale Basis aus Eigenvektoren ist oft Klausuraufgabe.
+
+### Satz
+
+Sei $A \in \mathbb{R}^{n \times n}$ symmetrisch mit reellen Eigenwerten $\lambda_1, \ldots, \lambda_n$. Fuer beliebige $\lambda \in \mathbb{R}$ und $x \in \mathbb{R}^n \setminus \{0\}$ gilt mit dem **Residuum** $d = Ax - \lambda x$:
+
+$$\min_{i = 1, \ldots, n} |\lambda - \lambda_i| \leq \frac{\|d\|_2}{\|x\|_2}.$$
+
+### Beweis (Skizze)
+
+Da $A$ symmetrisch ist, existiert eine **orthonormale Basis** $\{v_i\}$ aus Eigenvektoren. Schreibe $x = \sum c_i v_i$. Dann:
+
+- $\|x\|^2 = \sum c_i^2$
+- $d = \sum c_i (\lambda_i - \lambda) v_i$
+- $\|d\|^2 = \sum c_i^2 (\lambda_i - \lambda)^2 \geq \delta^2 \|x\|^2$ mit $\delta = \min_i |\lambda - \lambda_i|$.
+
+Wurzel ziehen, fertig. $\square$
+
+### Anwendungsbeispiel
+
+$A = \begin{pmatrix} 6 & 4 & 3 \\ 4 & 6 & 3 \\ 3 & 3 & 7 \end{pmatrix}$ mit EW $\{2, 4, 13\}$. Mit $\lambda = 12$ und $x = (3, 4, 5)^T$:
+
+$$Ax = (49, 51, 56)^T, \quad d = (13, 3, -4)^T, \quad \|d\|/\|x\| = \sqrt{194/50} \approx 1.97.$$
+
+Also ein EW in $[10.03, 13.97]$ — und tatsaechlich liegt $13$ darin.
+
+> [!warning] Achtung
+> Die Schranke ist **nicht** scharf. Im Beispiel ist die echte Distanz $|12 - 13| = 1$, die Schranke gibt $1.97$. Sie ist aber **immer** gueltig — fuer **jeden** Naeherungswert.
+
+---
+
+## 15. Jacobi-Eigenwertverfahren
+
+> [!info] Klausurrelevanz
+> **Nicht** zu verwechseln mit dem **Jacobi-Verfahren fuer lineare Systeme** (Section 7). Hier geht es um **alle Eigenwerte + Eigenvektoren** einer **symmetrischen** Matrix.
+
+### Idee
+
+Sukzessive 2x2-Rotationen $Q_k$ eliminieren das jeweils **betragsgroesste Nebendiagonal-Element**. Da jede Rotation orthogonal ist und die Aehnlichkeit erhaelt:
+
+$$A_{k+1} = Q_k^T A_k Q_k,$$
+
+bleiben die Eigenwerte erhalten. Die Quadratsumme der Nebendiagonal-Elemente
+
+$$\mathrm{off}(A) := \sum_{i \neq j} a_{ij}^2 = \|A\|_F^2 - \sum_i a_{ii}^2$$
+
+wird in jedem Schritt um $2 a_{pq}^2 > 0$ verkleinert. Im Limit ist $A_\infty$ diagonal — die Diagonale enthaelt die Eigenwerte.
+
+### Wahl der Rotation
+
+Fuer ein Off-Element $a_{pq} \neq 0$:
+
+$$\tau = \frac{a_{qq} - a_{pp}}{2 a_{pq}}, \quad t = \frac{\mathrm{sign}(\tau)}{|\tau| + \sqrt{\tau^2 + 1}}, \quad c = \frac{1}{\sqrt{1 + t^2}}, \quad s = t \cdot c.$$
+
+Falls $a_{pp} = a_{qq}$: $\theta = \pm\pi/4$ (45°-Rotation), also $c = s = 1/\sqrt{2}$ mit Vorzeichen aus $\mathrm{sign}(a_{pq})$.
+
+> [!warning] Achtung
+> **Wichtig:** Hier $\mathrm{sign}(0) := 1$ benutzen — nicht $\mathrm{sign}(0) = 0$ wie in NumPy. Sonst liefert die Formel den **falschen** Wurzel-Zweig fuer $\tau = 0$.
+
+### Eigenvektoren mitfuehren
+
+Setze $V_0 = I$ und aktualisiere $V_{k+1} = V_k Q_k$. Im Limit gilt $V^T A V = \mathrm{diag}(\lambda_i)$ — die Spalten von $V$ sind die Eigenvektoren.
+
+### Konvergenz
+
+- **Klassisches Jacobi** (immer das groesste $|a_{pq}|$): quadratische Konvergenz nach genuegend Schritten.
+- **Zyklisches Jacobi** (reihum alle Paare $(p,q)$): nach jedem vollstaendigen **Cycle** ($\binom{n}{2}$ Rotationen) reduziert sich $\mathrm{off}(A)$ etwa quadratisch.
+- Abbruchkriterium typisch: $\mathrm{off}(A) < \varepsilon$, z.B. $\varepsilon = 10^{-3}$.
+
+### Eigenschaften
+
+| Eigenschaft | Jacobi-EW |
+|---|---|
+| Voraussetzung | $A$ symmetrisch |
+| Liefert | **alle** Eigenwerte und -vektoren gleichzeitig |
+| Aufwand pro Rotation | $\mathcal{O}(n)$ (Zeilen + Spalten + $V$) |
+| Aufwand gesamt | $\mathcal{O}(n^3)$ pro Cycle, oft $\sim 5\text{–}10$ Cycles |
+| Genauigkeit | sehr hoch, **garantiert** klein in $\mathrm{off}$ |
+
+```mermaid
+graph LR
+    A["A symmetrisch"] --> B["pick max |a_pq|"]
+    B --> C["Jacobi-Rotation Q_k"]
+    C --> D["A := Q_k^T A Q_k<br/>V := V Q_k"]
+    D --> E{"off(A) < eps?"}
+    E -->|nein| B
+    E -->|ja| F["Eigenwerte = diag(A)<br/>Eigenvektoren = Spalten von V"]
+```
+
+> [!tip] Merke
+> Vorteil gegenueber QR-Iteration: Jacobi liefert **hohe relative Genauigkeit** auch fuer kleine Eigenwerte (wichtig bei stark variierenden Spektren). Nachteil: ueberlebt Householder/QR-basierten Algorithmen in der Praxis nur fuer **kleinere** Matrizen ($n \lesssim 100$).
+
+---
+
+## 16. Givens-Rotationen und Hessenberg-Reduktion
+
+> [!info] Klausurrelevanz
+> Givens-Rotation = $2 \times 2$-Drehung eingebettet in eine $n \times n$-Identitaet. Klausur: **Reduktion auf Hessenberg-Form von Hand** (3x3 oder 4x4).
+
+### Givens-Rotation
+
+In der $(p,q)$-Ebene:
+
+$$G(p, q, c, s) = I + (c - 1)(e_p e_p^T + e_q e_q^T) + s (e_p e_q^T - e_q e_p^T).$$
+
+Konkret: Einheitsmatrix mit Eintraegen $G_{pp} = G_{qq} = c$, $G_{pq} = s$, $G_{qp} = -s$. Es gilt $c^2 + s^2 = 1$ und $G$ ist orthogonal.
+
+**Wirkung:** $G \cdot A$ aendert nur die Zeilen $p, q$; $A \cdot G^T$ nur die Spalten $p, q$. Eine Givens-Rotation kann gezielt **einen** Eintrag $a_{ij}$ eliminieren — Wahl von $c, s$ aus $-s \cdot a_{pj} + c \cdot a_{qj} = 0$.
+
+### Hessenberg-Form
+
+Eine Matrix $H \in \mathbb{R}^{n \times n}$ heisst **(oberer) Hessenberg**, wenn $h_{ij} = 0$ fuer $i > j + 1$ — also Eintraege unterhalb der ersten Subdiagonale verschwinden.
+
+Bei **symmetrischer** Matrix wird Hessenberg automatisch **Tridiagonal**.
+
+### Hessenberg-Reduktion durch Givens
+
+Ziel: aus $A$ ueber Aehnlichkeitstransformationen $A' = G^T A G$ eine Hessenberg-Matrix erzeugen, indem schrittweise Subdiagonal-Eintraege $a_{31}, a_{41}, \ldots$ in der ersten Spalte (und analog in den Folgespalten) zu Null gemacht werden.
+
+### Beispiel (Klausur-Format, von Hand)
+
+$$M = \begin{pmatrix} 10 & 15 & 20 \\ 15 & -50 & 25 \\ 20 & 25 & -75 \end{pmatrix} \quad \text{(symmetrisch)}.$$
+
+**Ziel:** $m_{31} = 20 \to 0$. Wende Givens in der $(2,3)$-Ebene an:
+
+- $-s \cdot m_{21} + c \cdot m_{31} = 0 \Rightarrow \tan\theta = 20/15 \Rightarrow c = 3/5,\; s = 4/5$.
+
+**Links:** $G \cdot M$, Zeilen 2 und 3 neu:
+- Neue Zeile 2: $0.6 \cdot (15, -50, 25) + 0.8 \cdot (20, 25, -75) = (25, -10, -45)$
+- Neue Zeile 3: $-0.8 \cdot (15, -50, 25) + 0.6 \cdot (20, 25, -75) = (0, 55, -65)$
+
+**Rechts:** $\cdot G^T$, Spalten 2 und 3 neu:
+- Neue Spalte 2: $0.6 \cdot (15, -10, 55)^T + 0.8 \cdot (20, -45, -65)^T = (25, -42, -19)^T$
+- Neue Spalte 3: $-0.8 \cdot (15, -10, 55)^T + 0.6 \cdot (20, -45, -65)^T = (0, -19, -83)^T$
+
+**Resultat:**
+
+$$G M G^T = \begin{pmatrix} 10 & 25 & 0 \\ 25 & -42 & -19 \\ 0 & -19 & -83 \end{pmatrix}.$$
+
+**Pruefung:** $\mathrm{tr}(M) = -115 = \mathrm{tr}(GMG^T)$ — Spur invariant unter Aehnlichkeit. $\checkmark$
+
+### Givens vs. Householder fuer Hessenberg-Reduktion
+
+| Aspekt | Givens | Householder |
+|---|---|---|
+| Operation | $2 \times 2$ Rotation | $n - k$-elementige Reflexion |
+| Eliminiert pro Schritt | **ein** Element | eine **ganze Spalte** unterhalb |
+| Aufwand fuer dichte Matrix | $\mathcal{O}(n^3)$ | $\sim \tfrac{1}{2} \mathcal{O}(n^3)$ |
+| Gut bei | **Sparse** Matrizen, sukzessive Anwendung | dichten Matrizen |
+| Implementierungskomplexitaet | gering | mittel |
+
+> [!success] Best Practice
+> Givens-Rotationen sind das Werkzeug der Wahl, wenn nur **wenige** Eintraege zu eliminieren sind (z.B. bei bereits fast-tridiagonalen Matrizen, oder beim QR-Update). Bei voller Reduktion einer **dichten** Matrix ist Householder etwa doppelt so schnell.
+
+---
+
 ## Zusammenfassung
 
 | Eigenschaft | LU (Gauß) | LU mit Pivot | Cholesky |
@@ -934,10 +1650,23 @@ $$\begin{pmatrix} 4 & -1 & 0 \\ -1 & 4 & -1 \\ 0 & -1 & 4 \end{pmatrix} \begin{p
 | Aufwand | $\frac{2}{3}n^3$ | $\frac{2}{3}n^3$ | $\frac{1}{3}n^3$ |
 | Stabilität | Kann instabil sein | Numerisch stabil | Stabil |
 
-### Iterative Verfahren
+### Iterative Verfahren (lineare Systeme)
 
 - **Jacobi:** Alle Komponenten mit alten Werten berechnen, konvergiert bei strikt diag.-dom. Matrizen, parallelisierbar
 - **Gauss-Seidel:** Neue Werte sofort nutzen, konvergiert bei strikt diag.-dom. und s.p.d. Matrizen, oft ca. doppelt so schnell wie Jacobi
+- **JOR / SOR (Relaxationsverfahren):** Verallgemeinerung mit Parameter $\omega$. Fuer $\omega = 1$ identisch zu Jacobi/Gauss-Seidel, fuer $1 < \omega < 2$ "Ueberrelaxation" mit beschleunigter Konvergenz. Notwendig: $0 < \omega < 2$. Bei s.p.d. Matrizen konvergiert SOR fuer alle $\omega \in (0,2)$ (Ostrowski-Reich)
+- **Steepest Descent:** Optimierungsbasiert, minimiert $f(y) = \tfrac{1}{2} y^T A y - b^T y$ entlang des Residuums (= negativer Gradient). Nur fuer s.p.d. $A$. Konvergenzfaktor $\frac{\kappa-1}{\kappa+1}$ — sehr langsam bei schlechter Kondition. Vorstufe zum CG-Verfahren
+- **CG (Conjugate Gradient):** A-konjugierte Suchrichtungen, nur s.p.d. $A$. Konvergenzfaktor $\frac{\sqrt{\kappa} - 1}{\sqrt{\kappa} + 1}$ — quadratisch besser als Steepest Descent. Theoretisch direkt nach $n$ Schritten; Killerapplikation: grosse **sparse** s.p.d. Systeme (FEM, Membran-Diskretisierung, ...)
+
+### Eigenwertprobleme
+
+| Werkzeug | Voraussetzung | Liefert | Charakter |
+|---|---|---|---|
+| **Gerschgorin-Kreise** | beliebig | Lokalisierung aller EW (a-priori) | sehr billig, grob |
+| **EW-Residuum $\|d\|/\|x\|$** | $A$ symmetrisch | Naehe von $\lambda$ zu **einem** echten EW | a-posteriori, fuer Naeherungen |
+| **Jacobi-EW-Verfahren** | $A$ symmetrisch | **alle** EW + Eigenvektoren | iterativ, sehr genau, $\mathcal{O}(n^3)$ pro Cycle |
+| **Givens-Rotationen** | beliebig | Hessenberg- bzw. Tridiagonal-Reduktion | $2 \times 2$ Aehnlichkeit, gut fuer sparse |
+| **Householder-Reduktion** | beliebig | Hessenberg/Tridiagonal in einem Rutsch pro Spalte | dichte Matrizen, ~2x schneller als Givens |
 
 ### Fehleranalyse-Werkzeuge
 
@@ -945,5 +1674,7 @@ $$\begin{pmatrix} 4 & -1 & 0 \\ -1 & 4 & -1 \\ 0 & -1 & 4 \end{pmatrix} \begin{p
 |---|---|---|
 | **Konditionszahl** | Wie empfindlich ist das System? | $\kappa(A) = \|A\| \cdot \|A^{-1}\|$ |
 | **Prager-Oettli** | Ist $\tilde{x}$ eine zulässige Lösung? | $\|b - A\tilde{x}\| \leq \|\Delta A\| \|\tilde{x}\| + \|\Delta b\|$ (komponentenweise) |
+| **EW-Residuum (sym.)** | Naehe von $\lambda$ zu echtem EW? | $\min_i |\lambda - \lambda_i| \leq \|Ax - \lambda x\| / \|x\|$ |
+| **Gerschgorin-Kreise** | Wo liegen alle EW? | $\sigma(A) \subseteq \bigcup_i \{z : |z - a_{ii}| \leq R_i\}$ |
 
 > **Wichtig:** Prager-Oettli prüft nur, ob die Näherung mit den Datenunsicherheiten konsistent ist. Bei schlecht konditionierten Systemen kann eine Näherung den Test bestehen und trotzdem weit von der wahren Lösung entfernt sein.
