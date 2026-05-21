@@ -131,20 +131,20 @@ packet-beta
   192-223: "Data..."
 ```
 
-| Feld | Groesse | Beschreibung |
-|---|---|---|
-| **Version (Ver)** | 4 Bit | IP-Version (4 fuer IPv4) |
-| **Header Length (HLen)** | 4 Bit | Laenge des Headers in 32-Bit-Woertern |
-| **Type of Service** | 8 Bit | QoS-Priorisierung |
-| **Total Packet Length** | 16 Bit | Gesamtlaenge des Pakets in Bytes |
-| **Fragment ID** | 16 Bit | Identifikation zusammengehoeriger Fragmente |
-| **Flags** | 3 Bit | Steuerung der Fragmentierung (DF, MF) |
-| **Fragment Offset** | 13 Bit | Position des Fragments im Originalpaket |
-| **TTL** | 8 Bit | Time to Live — wird bei jedem Hop dekrementiert |
-| **Protocol** | 8 Bit | Transportprotokoll (6=TCP, 17=UDP) |
-| **Header Checksum** | 16 Bit | Pruefsumme nur ueber den Header |
-| **Source Address** | 32 Bit | Absender-IP-Adresse |
-| **Destination Address** | 32 Bit | Ziel-IP-Adresse |
+| Feld                     | Groesse | Beschreibung                                    |
+| ------------------------ | ------- | ----------------------------------------------- |
+| **Version (Ver)**        | 4 Bit   | IP-Version (4 fuer IPv4)                        |
+| **Header Length (HLen)** | 4 Bit   | Laenge des Headers in 32-Bit-Woertern           |
+| **Type of Service**      | 8 Bit   | QoS-Priorisierung                               |
+| **Total Packet Length**  | 16 Bit  | Gesamtlaenge des Pakets in Bytes                |
+| **Fragment ID**          | 16 Bit  | Identifikation zusammengehoeriger Fragmente     |
+| **Flags**                | 3 Bit   | Steuerung der Fragmentierung (DF, MF)           |
+| **Fragment Offset**      | 13 Bit  | Position des Fragments im Originalpaket         |
+| **TTL**                  | 8 Bit   | Time to Live — wird bei jedem Hop dekrementiert |
+| **Protocol**             | 8 Bit   | Transportprotokoll (6=TCP, 17=UDP)              |
+| **Header Checksum**      | 16 Bit  | Pruefsumme nur ueber den Header                 |
+| **Source Address**       | 32 Bit  | Absender-IP-Adresse                             |
+| **Destination Address**  | 32 Bit  | Ziel-IP-Adresse                                 |
 
 > [!tip] Merke
 > Das **TTL-Feld** verhindert, dass Pakete endlos im Netz kreisen. Bei jedem Router wird TTL um 1 dekrementiert. Erreicht TTL den Wert 0, wird das Paket verworfen und ein ICMP-Fehler zurueckgesendet.

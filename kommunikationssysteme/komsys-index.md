@@ -41,6 +41,13 @@ tags: [kommunikationssysteme, index]
 - [[kommunikationssysteme/lectures/04/komsys-08-routingprotokolle|08 — Routingprotokolle]]
 - [[kommunikationssysteme/lectures/04/komsys-09-arp-icmp-ip|09 — ARP, ICMP und IP-Header]]
 
+### Vorlesung 5 — Send & Wait und Sliding Window
+- [[kommunikationssysteme/lectures/05/komsys-10-send-wait|10 — Send & Wait]]
+- [[kommunikationssysteme/lectures/05/komsys-11-sliding-window|11 — Sliding Window]]
+
+### Vorlesung 6 — TCP
+- [[kommunikationssysteme/lectures/06/komsys-12-tcp|12 — TCP: Ein Sliding-Window-Protokoll]]
+
 ## Exercises
 
 ## Resources
@@ -52,3 +59,8 @@ tags: [kommunikationssysteme, index]
 - [[kommunikationssysteme/resources/Kommunikationsssysteme_5_Einfuehrung_IP_Adressen.pdf|VL3 — IP-Adressen]]
 - [[kommunikationssysteme/resources/Kommunikationsssysteme__06_CIDR.pdf|VL3 — CIDR]]
 - [[kommunikationssysteme/resources/Kommunikationssysteme_07_NAT.pdf|VL3 — NAT]]
+- [[kommunikationssysteme/resources/Kommunikationssysteme_08_Routingprotokolle.pdf|VL4 — Routingprotokolle]]
+- [[kommunikationssysteme/resources/Kommunikationssysteme_9_ARP_ICMP_IP.pdf|VL4 — ARP, ICMP, IP]]
+- [[kommunikationssysteme/resources/Kommunikationssysteme_10_SendWait.pdf|VL5 — Send & Wait]]
+- [[kommunikationssysteme/resources/Kommunikationssysteme_11_SlidingWindow.pdf|VL5 — Sliding Window]]
+- [[kommunikationssysteme/resources/Kommunikationssysteme_12_TCP.pdf|VL6 — TCP]]

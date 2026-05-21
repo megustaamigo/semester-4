@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LU-Zerlegung 3×3</title>
+<style>
+  :root {
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    --color-background-primary: #ffffff;
+    --color-background-secondary: #f4f4f5;
+    --color-text-primary: #18181b;
+    --color-text-secondary: #52525b;
+    --color-text-tertiary: #a1a1aa;
+    --color-border-primary: #d4d4d8;
+    --color-border-secondary: #e4e4e7;
+    --color-border-tertiary: #f4f4f5;
+    --border-radius-md: 6px;
+    --border-radius-lg: 10px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-background-primary: #1a1a1a;
+      --color-background-secondary: #2a2a2a;
+      --color-text-primary: #f4f4f5;
+      --color-text-secondary: #a1a1aa;
+      --color-text-tertiary: #71717a;
+      --color-border-primary: #52525b;
+      --color-border-secondary: #3f3f46;
+      --color-border-tertiary: #27272a;
+    }
+    body { background: #18181b; color: #f4f4f5; }
+  }
+  body { font-family: var(--font-sans); padding: 1.5rem; max-width: 1100px; margin: 0 auto; }
+  .lu-root { font-family: var(--font-sans); padding: 1rem 0; }
+  .step-nav { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .step-btn { padding: 6px 14px; font-size: 13px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: transparent; color: var(--color-text-secondary); cursor: pointer; transition: background 0.15s; }
+  .step-btn.active { background: var(--color-background-secondary); color: var(--color-text-primary); border-color: var(--color-border-primary); font-weight: 500; }
+  .step-panel { display: none; }
+  .step-panel.visible { display: block; }
+  .matrix-row { display: flex; gap: 2px; align-items: center; justify-content: center; }
+  .mat-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .mat-label { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 4px; }
+  .mat-bracket { display: flex; align-items: center; gap: 0; }
+  .brace-left, .brace-right { font-size: 52px; font-weight: 200; color: var(--color-text-secondary); line-height: 1; }
+  .mat-inner { display: grid; gap: 2px; padding: 4px 8px; }
+  .cell { width: 44px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 15px; border-radius: 4px; background: var(--color-background-secondary); color: var(--color-text-primary); }
+  .cell.hi-blue { background: #B5D4F4; color: #0C447C; font-weight: 500; }
+  .cell.hi-teal { background: #9FE1CB; color: #085041; font-weight: 500; }
+  .cell.hi-amber { background: #FAC775; color: #633806; font-weight: 500; }
+  .cell.zero { color: var(--color-text-tertiary); }
+  .op-row { display: flex; align-items: center; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .op-sign { font-size: 22px; color: var(--color-text-secondary); }
+  .eq-sign { font-size: 22px; color: var(--color-text-secondary); }
+  .card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 1rem; }
+  .step-title { font-size: 16px; font-weight: 500; color: var(--color-text-primary); margin: 0 0 8px; }
+  .step-desc { font-size: 14px; color: var(--color-text-secondary); line-height: 1.6; margin: 0 0 1rem; }
+  .formula { font-size: 14px; font-family: var(--font-mono); background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 8px 12px; margin: 8px 0; color: var(--color-text-primary); white-space: pre-wrap; }
+  .highlight-note { font-size: 12px; display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+  .dot { display: inline-block; width: 12px; height: 12px; border-radius: 2px; vertical-align: middle; margin-right: 4px; }
+  @media (prefers-color-scheme: dark) {
+    .cell.hi-blue { background: #0C447C; color: #B5D4F4; }
+    .cell.hi-teal { background: #085041; color: #9FE1CB; }
+    .cell.hi-amber { background: #633806; color: #FAC775; }
+  }
+</style>
+</head>
+<body>
+<div class="lu-root">
+  <div class="step-nav">
+    <button class="step-btn active" onclick="showStep(0)">0 · Ausgangsmatrix</button>
+    <button class="step-btn" onclick="showStep(1)">1 · Schritt 1</button>
+    <button class="step-btn" onclick="showStep(2)">2 · Schritt 2</button>
+    <button class="step-btn" onclick="showStep(3)">3 · Schritt 3</button>
+    <button class="step-btn" onclick="showStep(4)">4 · Ergebnis L·U</button>
+  </div>
+
+  <!-- Step 0 -->
+  <div class="step-panel visible" id="p0">
+    <div class="card">
+      <p class="step-title">Ausgangsmatrix A</p>
+      <p class="step-desc">Wir wollen A in zwei Matrizen zerlegen: eine untere Dreiecksmatrix <strong>L</strong> (lower) und eine obere Dreiecksmatrix <strong>U</strong> (upper), sodass A = L · U gilt.</p>
+      <div class="op-row" style="margin-top:1rem;">
+        <div class="mat-wrap">
+          <div class="mat-label">A</div>
+          <div class="mat-bracket"><span class="brace-left">[</span>
+          <div class="mat-inner" style="grid-template-columns: repeat(3,44px);">
+            <div class="cell">2</div><div class="cell">1</div><div class="cell">1</div>
+            <div class="cell">4</div><div class="cell">3</div><div class="cell">3</div>
+            <div class="cell">8</div><div class="cell">7</div><div class="cell">9</div>
+          </div><span class="brace-right">]</span></div>
+        </div>
+        <div class="op-sign">=</div>
+        <div class="mat-wrap">
+          <div class="mat-label">L</div>
+          <div class="mat-bracket"><span class="brace-left">[</span>
+          <div class="mat-inner" style="grid-template-columns: repeat(3,44px);">
+            <div class="cell hi-teal">?</div><div class="cell zero">0</div><div class="cell zero">0</div>
+            <div class="cell hi-teal">?</div><div class="cell hi-teal">?</div><div class="cell zero">0</div>
+            <div class="cell hi-teal">?</div><div class="cell hi-teal">?</div><div class="cell hi-teal">?</div>
+          </div><span class="brace-right">]</span></div>
+        </div>
+        <div class="op-sign">·</div>
+        <div class="mat-wrap">
+          <div class="mat-label">U</div>
+          <div class="mat-bracket"><span class="brace-left">[</span>
+          <div class="mat-inner" style="grid-template-columns: repeat(3,44px);">
+            <div class="cell hi-blue">?</div><div class="cell hi-blue">?</div><div class="cell hi-blue">?</div>
+            <div class="cell zero">0</div><div class="cell hi-blue">?</div><div class="cell hi-blue">?</div>
+            <div class="cell zero">0</div><div class="cell zero">0</div><div class="cell hi-blue">?</div>
+          </div><span class="brace-right">]</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 1 -->
+  <div class="step-panel" id="p1">
+    <div class="card">
+      <p class="step-title">Schritt 1 — Erste Spalte eliminieren</p>
+      <p class="step-desc">Wähle Pivotelement: <strong>a₁₁ = 2</strong>. Berechne die Faktoren (Multiplikatoren) für die Zeilen darunter:</p>
+      <div class="formula">m₂₁ = a₂₁ / a₁₁ = 4 / 2 = 2
+m₃₁ = a₃₁ / a₁₁ = 8 / 2 = 4</div>
+      <p class="step-desc">Subtrahiere von Zeile 2 und 3 das m-fache der Zeile 1. Die erste Zeile von U ist gleich der ersten Zeile von A:</p>
+      <div class="op-row" style="margin-top:1rem;">
+        <div class="mat-wrap">
+          <div class="mat-label">A nach Schritt 1</div>
+          <div class="mat-bracket"><span class="brace-left">[</span>
+          <div class="mat-inner" style="grid-template-columns: repeat(3,44px);">
+            <div class="cell hi-blue">2</div><div class="cell hi-blue">1</div><div class="cell hi-blue">1</div>
+            <div class="cell hi-amber">0</div><div class="cell">1</div><div class="cell">1</div>
+            <div class="cell hi-amber">0</div><div class="cell">3</div><div class="cell">5</div>
+          </div><span class="brace-right">]</span></div>
+        </div>
+        <div style="font-size:13px; color:var(--color-text-secondary); max-width:180px; line-height:1.6;">
+          Z₂ ← Z₂ − 2·Z₁<br>Z₃ ← Z₃ − 4·Z₁
+        </div>
+      </div>
+      <div class="highlight-note">
+        <span><span class="dot" style="background:#B5D4F4;"></span>Erste U-Zeile</span>
+        <span><span class="dot" style="background:#FAC775;"></span>Auf null gesetzt</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="step-panel" id="p2">
+    <div class="card">
+      <p class="step-title">Schritt 2 — Zweite Spalte eliminieren</p>
+      <p class="step-desc">Neues Pivotelement: <strong>a₂₂ = 1</strong>. Faktor für Zeile 3:</p>
+      <div class="formula">m₃₂ = a₃₂ / a₂₂ = 3 / 1 = 3</div>
+      <p class="step-desc">Subtrahiere von Zeile 3 das 3-fache der Zeile 2:</p>
+      <div class="op-row" style="margin-top:1rem;">
+        <div class="mat-wrap">
+          <div class="mat-label">A nach Schritt 2 = U</div>
+          <div class="mat-bracket"><span class="brace-left">[</span>
+          <div class="mat-inner" style="grid-template-columns: repeat(3,44px);">
+            <div class="cell hi-blue">2</div><div class="cell hi-blue">1</div><div class="cell hi-blue">1</div>
+            <div class="cell zero">0</div><div class="cell hi-blue">1</div><div class="cell hi-blue">1</div>
+            <div class="cell zero">0</div><div class="cell hi-amber">0</div><div class="cell hi-blue">2</div>
+          </div><span class="brace-right">]</span></div>
+        </div>
+        <div style="font-size:13px; color:var(--color-text-secondary); max-width:180px; line-height:1.6;">
+          Z₃ ← Z₃ − 3·Z₂<br>
+          <br>U ist jetzt fertig!
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="step-panel" id="p3">
+    <div class="card">
+      <p class="step-title">Schritt 3 — L aufbauen</p>
+      <p class="step-desc">L enthält auf der Hauptdiagonale <strong>1en</strong> und unterhalb die berechneten Multiplikatoren m aus den vorherigen Schritten:</p>
+      <div class="formula">L = [ 1   0   0 ]
+    [ m₂₁ 1   0 ]   =  [ 1  0  0 ]
+    [ m₃₁ m₃₂ 1 ]      [ 2  1  0 ]
+                       [ 4  3  1 ]</div>
+      <div class="op-row" style="margin-top:1rem;">
+        <div class="mat-wrap">
+          <div class="mat-label">L</div>
+          <div class="mat-bracket"><span class="brace-left">[</span>
+          <div class="mat-inner" style="grid-template-columns: repeat(3,44px);">
+            <div class="cell hi-teal">1</div><div class="cell zero">0</div><div class="cell zero">0</div>
+            <div class="cell hi-amber">2</div><div class="cell hi-teal">1</div><div class="cell zero">0</div>
+            <div class="cell hi-amber">4</div><div class="cell hi-amber">3</div><div class="cell hi-teal">1</div>
+          </div><span class="brace-right">]</span></div>
+        </div>
+      </div>
+      <div class="highlight-note">
+        <span><span class="dot" style="background:#9FE1CB;"></span>Diagonale (immer 1)</span>
+        <span><span class="dot" style="background:#FAC775;"></span>Multiplikatoren m</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 4 -->
+  <div class="step-panel" id="p4">
+    <div class="card">
+      <p class="step-title">Ergebnis: A = L · U</p>
+      <p class="step-desc">Überprüfe: L · U muss die ursprüngliche Matrix A ergeben.</p>
+      <div class="op-row" style="margin-top:1rem; gap: 8px;">
+        <div class="mat-wrap">
+          <div class="mat-label">L</div>
+          <div class="mat-bracket"><span class="brace-left">[</span>
+          <div class="mat-inner" style="grid-template-columns: repeat(3,44px);">
+            <div class="cell hi-teal">1</div><div class="cell zero">0</div><div class="cell zero">0</div>
+            <div class="cell hi-teal">2</div><div class="cell hi-teal">1</div><div class="cell zero">0</div>
+            <div class="cell hi-teal">4</div><div class="cell hi-teal">3</div><div class="cell hi-teal">1</div>
+          </div><span class="brace-right">]</span></div>
+        </div>
+        <div class="op-sign">·</div>
+        <div class="mat-wrap">
+          <div class="mat-label">U</div>
+          <div class="mat-bracket"><span class="brace-left">[</span>
+          <div class="mat-inner" style="grid-template-columns: repeat(3,44px);">
+            <div class="cell hi-blue">2</div><div class="cell hi-blue">1</div><div class="cell hi-blue">1</div>
+            <div class="cell zero">0</div><div class="cell hi-blue">1</div><div class="cell hi-blue">1</div>
+            <div class="cell zero">0</div><div class="cell zero">0</div><div class="cell hi-blue">2</div>
+          </div><span class="brace-right">]</span></div>
+        </div>
+        <div class="op-sign">=</div>
+        <div class="mat-wrap">
+          <div class="mat-label">A ✓</div>
+          <div class="mat-bracket"><span class="brace-left">[</span>
+          <div class="mat-inner" style="grid-template-columns: repeat(3,44px);">
+            <div class="cell">2</div><div class="cell">1</div><div class="cell">1</div>
+            <div class="cell">4</div><div class="cell">3</div><div class="cell">3</div>
+            <div class="cell">8</div><div class="cell">7</div><div class="cell">9</div>
+          </div><span class="brace-right">]</span></div>
+        </div>
+      </div>
+      <div style="margin-top:1rem; font-size:13px; color:var(--color-text-secondary); line-height:1.6;">
+        Die Zerlegung ist vollständig. L und U können nun verwendet werden, um Gleichungssysteme A·x = b effizient zu lösen (Vorwärts- und Rückwärtssubstitution).
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showStep(i) {
+  document.querySelectorAll('.step-panel').forEach((p,j) => p.classList.toggle('visible', j===i));
+  document.querySelectorAll('.step-btn').forEach((b,j) => b.classList.toggle('active', j===i));
+}
+</script>
+</body>
+</html>

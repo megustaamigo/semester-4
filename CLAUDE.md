@@ -22,6 +22,7 @@ Each course has:
 - `resources/` — PDFs, slides, images, and other provided materials
 - `repos/` — Git repositories for practical coursework (web-engineering, kommunikationssysteme, csharp, numerik). Repos are cloned/created directly under this folder (e.g., `web-engineering/repos/p01-NDSS/`). Do NOT move repo files into the vault — reference them in-place from exercise notes.
   - **Numerik** uses a local-only repo at `numerik/repos/numerik/` (no remote). Code is organized per sheet in `blattXX/` subfolders, each with `aufgabeN.py` files and a `main.py` runner. Uses a Python venv (`.venv/`) with numpy.
+- `artifacts/` — Interactive HTML artifacts (only `numerik/` has one currently). Registered in `<course>/exam_artifacts.md`. See the **HTML Artifact Workflow** section below.
 
 The vault root contains:
 - `00 - Dashboard.md` — Main entry point with Dataview dynamic queries
@@ -95,6 +96,60 @@ Same dual-location principle. Questions are found at the **end of the lecture PD
 3. When creating lecture notes, add a **"Fragen zur Selbstkontrolle"** section at the end that:
    - Links to the selbstkontrolle file
    - For each question: state the question in bold, then provide a **detailed answer based on the lecture material**
+
+## Workflow: When the User Provides an HTML Artifact (Numerik)
+
+Interactive HTML artifacts (e.g., step-by-step matrix decomposition visualizations generated as Claude artifacts) are collected per course in `<course>/artifacts/` and registered in `<course>/exam_artifacts.md`. Currently only Numerik uses this.
+
+**Trigger:** the user links an `.html` file path and indicates it is "for numerik" / Numerik exam prep. Do NOT ask for confirmation — this workflow is pre-authorized.
+
+### Steps
+
+1. **Move** the file from its source into `numerik/artifacts/` (create the folder if missing). Use `mv`, not copy.
+
+2. **Sanitize the HTML.** Claude-generated artifacts are typically **fragments** that start with `<style>` and contain only `<div>` markup — no `<!DOCTYPE>`, `<html>`, `<head>`, or `<body>`. They also reference Claude.ai design-system CSS variables (`--font-sans`, `--color-text-primary`, `--color-background-secondary`, `--color-border-secondary`, `--border-radius-md`, etc.) that are undefined in a standalone browser. Wrap the fragment as a complete document:
+
+   - Add `<!DOCTYPE html>`, `<html lang="de">`, `<head>` with `<meta charset="UTF-8">` + viewport meta tag, and a `<title>`.
+   - Inside the existing `<style>`, prepend a `:root { ... }` block defining the Claude.ai variables with a neutral zinc palette (white/`#18181b` text, `#f4f4f5` secondary background, `#d4d4d8` borders, system font stack for `--font-sans`, monospace for `--font-mono`, `6px` / `10px` for the border radii).
+   - Add a `@media (prefers-color-scheme: dark) { :root { ... } body { background: #18181b; color: #f4f4f5; } }` block that flips the variables for dark mode.
+   - Add `body { font-family: var(--font-sans); padding: 1.5rem; max-width: 1100px; margin: 0 auto; }`.
+   - Move the original markup and `<script>` into a `<body>`. Keep all interactive behavior intact.
+   - For multi-line code/formula content: replace `<br>` inside `.formula` blocks with literal newlines and add `white-space: pre-wrap` to the `.formula` CSS rule so line breaks render in both browser and Obsidian preview.
+
+3. **Register in `numerik/exam_artifacts.md`.** Create the file if missing with frontmatter:
+
+   ```yaml
+   ---
+   course: numerik
+   type: resource
+   date: YYYY-MM-DD
+   tags:
+     - numerik
+     - exam
+     - artifacts
+   ---
+   ```
+
+   Always **append** (never overwrite) a new section per artifact:
+
+   ```markdown
+   ## <Descriptive heading derived from filename or context>
+
+   <1–2 sentence German description of what the artifact demonstrates.>
+
+   - **Open in browser:** [<filename>.html](file:///home/samuel/obsidian/semester-4/numerik/artifacts/<filename>.html)
+
+   <iframe src="file:///home/samuel/obsidian/semester-4/numerik/artifacts/<filename>.html" width="100%" height="650" style="border:1px solid var(--background-modifier-border); border-radius:8px; background:var(--background-primary);" sandbox="allow-scripts allow-same-origin"></iframe>
+   ```
+
+4. **Update the course index** (`numerik/num-index.md`) with a link to `exam_artifacts.md` under a "Resources" or "Exam Prep" section, if not already present.
+
+### Iframe rules (critical)
+
+- Use the **absolute `file:///` path**, never a vault-relative path. Obsidian serves notes via `app://`, and its iframe sandbox does not resolve relative URLs to local files reliably.
+- Always include `sandbox="allow-scripts allow-same-origin"` — without `allow-scripts`, interactive JS (step buttons, etc.) is disabled.
+- Use Obsidian theme CSS variables (`--background-modifier-border`, `--background-primary`) on the iframe `style` so it matches both light and dark themes.
+- Iframes render reliably in **Reading view**. Live Preview may show only the source — note this if the user reports the iframe not displaying.
 
 ## Callouts in Lecture Notes
 

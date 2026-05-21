@@ -12,12 +12,16 @@ tags: [data-science, index]
 - [[data-science/lectures/01/ds-01-ueberblick-grundbegriffe|01 — Überblick & Grundbegriffe]]
 - [[data-science/lectures/02/ds-02-python|02 — Python]]
 - [[data-science/lectures/03/ds-03-univariate-eda|03 — Eindimensionale EDA und Visualisierungen]]
+- [[data-science/lectures/04/ds-04-visualisierungen|04 — Visualisierungen und mehrdimensionale EDA]]
+- [[data-science/lectures/05/ds-05-multivariate-eda|05 — Mehrdimensionale EDA]]
 
 ## Selbstkontrolle
 
 - [[data-science/selbstkontrolle/ds-selbstkontrolle-01|Selbstkontrolle 01 — Überblick & Grundbegriffe]]
 - [[data-science/selbstkontrolle/ds-selbstkontrolle-02|Selbstkontrolle 02 — Python]]
 - [[data-science/selbstkontrolle/ds-selbstkontrolle-03|Selbstkontrolle 03 — Eindimensionale EDA und Visualisierungen]]
+- [[data-science/selbstkontrolle/ds-selbstkontrolle-04|Selbstkontrolle 04 — Visualisierungen und mehrdimensionale EDA]]
+- [[data-science/selbstkontrolle/ds-selbstkontrolle-05|Selbstkontrolle 05 — Mehrdimensionale EDA]]
 
 ## Exercises
 
@@ -26,3 +30,5 @@ tags: [data-science, index]
 - [[data-science/resources/01_Grundbegriffe.pdf|01_Grundbegriffe.pdf]]
 - [[data-science/resources/02_Python.pdf|02_Python.pdf]]
 - [[data-science/resources/03_Univariate_EDA.pdf|03_Univariate_EDA.pdf]]
+- [[data-science/resources/04_Visualisierungen.pdf|04_Visualisierungen.pdf]]
+- [[data-science/resources/05_Multivariate_EDA.pdf|05_Multivariate_EDA.pdf]]

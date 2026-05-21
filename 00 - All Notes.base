@@ -32,6 +32,8 @@ views:
       - course
       - type
     sort:
+      - property: date
+        direction: DESC
       - property: formula.note_link
         direction: ASC
       - property: lecture
