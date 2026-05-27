@@ -11,13 +11,23 @@ This is an Obsidian vault for university coursework in semester 4.
 - **Introduction to Data Science** → `data-science/` — Active
 - **Large Scale IT and Cloud Computing** → `large-scale-it/` — Block course, starts in ~8 weeks
 
+## Lecture Numbering vs. Weeks (IMPORTANT — read before creating lecture notes)
+
+Especially relevant for **Web Engineering** and **Kommunikationssysteme**, where one week often spans several slide decks:
+
+- **Lecture-note numbers track the slide deck / content unit, NOT the calendar week.** Example: `webeng-12-javascript-fetch.md` and `webeng-13-restful-services.md` are slide decks 12 and 13, but both are taught in **week 8** → they live in `lectures/08/` and both carry `lecture: 8`.
+- **A single week can hold multiple decks** — multiple `webeng-NN-*` / `komsys-NN-*` notes can share the same `lectures/<week>/` folder.
+- **`lernziele/` and `selbstkontrolle/` files are numbered by WEEK, not by deck.** So `webeng-lernziele-08.md` (week 8) covers *all* decks taught that week. Link every lecture note of a week to the same week-numbered lernziele/selbstkontrolle file, and split that file's cards across the notes when the week has several decks (e.g. cards 1–5 → Fetch note, cards 6–15 → REST note).
+- **The `lecture:` frontmatter value = the week number** (it matches the `lectures/<NN>/` folder), never the deck number.
+- **The user always tells you which week** a provided deck belongs to. Use that week for (1) the `lectures/<NN>/` folder, (2) the `lecture:` frontmatter, and (3) the lernziele/selbstkontrolle link. **Do not infer the week from the deck number.**
+
 ## Folder Structure
 
 Each course has:
 - A **course index file** using the course prefix (e.g., `kommunikationssysteme/komsys-index.md`) — this is the hub that links to all notes in that course
 - `lernziele/` — Learning objectives per lecture (web-engineering)
 - `selbstkontrolle/` — Self-check questions per lecture (kommunikationssysteme, data-science)
-- `lectures/` — Lecture notes and summaries, organized in subfolders per lecture (e.g., `lectures/01/`)
+- `lectures/` — Lecture notes and summaries, organized in subfolders **per week** (e.g., `lectures/01/`). A week folder may contain several deck-numbered notes — see **Lecture Numbering vs. Weeks** above.
 - `exercises/` — Exercises organized in subfolders per sheet (e.g., `exercises/01/`). Each subfolder contains an `exercise-XX.md` (task description), a `solution-XX.md` (compact code solutions), and a `solution-XX.pdf` (generated via pandoc). When creating solution files, extract code from the repo and compress it to be as compact as possible while remaining readable.
 - `resources/` — PDFs, slides, images, and other provided materials
 - `repos/` — Git repositories for practical coursework (web-engineering, kommunikationssysteme, csharp, numerik). Repos are cloned/created directly under this folder (e.g., `web-engineering/repos/p01-NDSS/`). Do NOT move repo files into the vault — reference them in-place from exercise notes.

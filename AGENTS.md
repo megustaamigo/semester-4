@@ -11,6 +11,16 @@ This is an Obsidian vault for university coursework in semester 4.
 - `data-science` -> `data-science/`
 - `large-scale-it` -> `large-scale-it/`
 
+## Lecture Numbering vs. Weeks (IMPORTANT)
+
+Especially for **web-engineering** and **kommunikationssysteme**, where one week often spans several slide decks:
+
+- Lecture-note numbers track the **slide deck / content unit, NOT the calendar week**. E.g. `komsys-13-udp.md` and `komsys-14-dns.md` are decks 13 and 14, both taught in **week 7** → both live in `lectures/07/` with `lecture: 7`.
+- A single week can hold **multiple decks** sharing one `lectures/<week>/` folder.
+- `lernziele/` and `selbstkontrolle/` files are numbered **by week**, not by deck. So `komsys-selbstkontrolle-07.md` covers all decks taught in week 7; split its cards across the week's notes.
+- The `lecture:` frontmatter value is the **week number** (matches the `lectures/<NN>/` folder), never the deck number.
+- The user **always tells you which week** a deck belongs to — use it for the folder, the `lecture:` value, and the selbstkontrolle/lernziele link. Do not infer the week from the deck number.
+
 ## Vault Structure
 
 Each course may contain:

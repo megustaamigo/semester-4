@@ -48,6 +48,10 @@ tags: [kommunikationssysteme, index]
 ### Vorlesung 6 — TCP
 - [[kommunikationssysteme/lectures/06/komsys-12-tcp|12 — TCP: Ein Sliding-Window-Protokoll]]
 
+### Vorlesung 7 — UDP & DNS
+- [[kommunikationssysteme/lectures/07/komsys-13-udp|13 — User Datagram Protocol (UDP)]]
+- [[kommunikationssysteme/lectures/07/komsys-14-dns|14 — Domain Name System (DNS)]]
+
 ## Exercises
 
 ## Resources
@@ -64,3 +68,5 @@ tags: [kommunikationssysteme, index]
 - [[kommunikationssysteme/resources/Kommunikationssysteme_10_SendWait.pdf|VL5 — Send & Wait]]
 - [[kommunikationssysteme/resources/Kommunikationssysteme_11_SlidingWindow.pdf|VL5 — Sliding Window]]
 - [[kommunikationssysteme/resources/Kommunikationssysteme_12_TCP.pdf|VL6 — TCP]]
+- [[kommunikationssysteme/resources/Kommunikationssysteme_13_UDP.pdf|VL7 — UDP]]
+- [[kommunikationssysteme/resources/Kommunikationssysteme_14_DNS.pdf|VL7 — DNS]]

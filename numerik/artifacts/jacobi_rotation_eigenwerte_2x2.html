@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jacobi-Rotation — Eigenwerte & Eigenvektoren (2×2)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ],
+          trust: true,
+          strict: 'ignore',
+          macros: {
+            '\\cblue':   '\\htmlClass{c-blue}{#1}',
+            '\\cteal':   '\\htmlClass{c-teal}{#1}',
+            '\\camber':  '\\htmlClass{c-amber}{#1}',
+            '\\ccoral':  '\\htmlClass{c-coral}{#1}',
+            '\\cpurple': '\\htmlClass{c-purple}{#1}',
+            '\\cred':    '\\htmlClass{c-red}{#1}',
+            '\\cgreen':  '\\htmlClass{c-green}{#1}'
+          }
+        });"></script>
+<style>
+.legend{font-size:13px;color:var(--color-text-secondary);line-height:1.7;background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 16px;margin:10px 0;display:grid;grid-template-columns:max-content 1fr;column-gap:14px;row-gap:6px;align-items:baseline}
+.legend dt{font-family:var(--font-mono);color:var(--color-text-primary);font-weight:500;margin:0}
+.legend dd{margin:0}
+.katex{font-size:0.85em}
+.katex-display{margin:0.5em 0}
+:root {
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #f4f4f5;
+  --color-text-primary: #18181b;
+  --color-text-secondary: #52525b;
+  --color-text-tertiary: #a1a1aa;
+  --color-border-primary: #d4d4d8;
+  --color-border-secondary: #e4e4e7;
+  --color-border-tertiary: #f4f4f5;
+  --border-radius-md: 6px;
+  --border-radius-lg: 10px;
+  --hl-blue:   #0C447C;
+  --hl-teal:   #085041;
+  --hl-amber:  #633806;
+  --hl-coral:  #712B13;
+  --hl-purple: #3C3489;
+  --hl-red:    #791F1F;
+  --hl-green:  #27500A;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background-primary: #1a1a1a;
+    --color-background-secondary: #2a2a2a;
+    --color-text-primary: #f4f4f5;
+    --color-text-secondary: #a1a1aa;
+    --color-text-tertiary: #71717a;
+    --color-border-primary: #52525b;
+    --color-border-secondary: #3f3f46;
+    --color-border-tertiary: #27272a;
+    --hl-blue:   #B5D4F4;
+    --hl-teal:   #9FE1CB;
+    --hl-amber:  #FAC775;
+    --hl-coral:  #F5C4B3;
+    --hl-purple: #CECBF6;
+    --hl-red:    #F7C1C1;
+    --hl-green:  #C0DD97;
+  }
+  body { background: #18181b; color: #f4f4f5; }
+}
+body { font-family: var(--font-sans); padding: 1.5rem; max-width: 1100px; margin: 0 auto; }
+
+.c-blue   { color: var(--hl-blue);   font-weight: 600 }
+.c-teal   { color: var(--hl-teal);   font-weight: 600 }
+.c-amber  { color: var(--hl-amber);  font-weight: 600 }
+.c-coral  { color: var(--hl-coral);  font-weight: 600 }
+.c-purple { color: var(--hl-purple); font-weight: 600 }
+.c-red    { color: var(--hl-red);    font-weight: 600 }
+.c-green  { color: var(--hl-green);  font-weight: 600 }
+
+.step-nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.5rem}
+.step-btn{padding:6px 14px;font-size:13px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);cursor:pointer}
+.step-btn.active{background:var(--color-background-secondary);color:var(--color-text-primary);border-color:var(--color-border-primary);font-weight:500}
+.step-panel{display:none}
+.step-panel.visible{display:block}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:1rem}
+.step-title{font-size:16px;font-weight:500;color:var(--color-text-primary);margin:0 0 8px}
+.step-desc{font-size:14px;color:var(--color-text-secondary);line-height:1.6;margin:0 0 8px}
+.mat-wrap{display:flex;flex-direction:column;align-items:center}
+.mat-label{font-size:13px;color:var(--color-text-secondary);margin-bottom:4px}
+.mat-bracket{display:flex;align-items:center}
+.brace{font-size:48px;font-weight:200;color:var(--color-text-secondary);line-height:1}
+.mat-inner{display:grid;gap:2px;padding:4px 8px}
+.cell{width:64px;height:36px;display:flex;align-items:center;justify-content:center;font-size:14px;border-radius:4px;background:var(--color-background-secondary);color:var(--color-text-primary)}
+.cell.hi-blue   {background:#B5D4F4;color:#0C447C;font-weight:500}
+.cell.hi-teal   {background:#9FE1CB;color:#085041;font-weight:500}
+.cell.hi-amber  {background:#FAC775;color:#633806;font-weight:500}
+.cell.hi-coral  {background:#F5C4B3;color:#712B13;font-weight:500}
+.cell.hi-purple {background:#CECBF6;color:#3C3489;font-weight:500}
+.cell.hi-red    {background:#F7C1C1;color:#791F1F;font-weight:500}
+.cell.hi-green  {background:#C0DD97;color:#27500A;font-weight:500}
+.cell.zero{color:var(--color-text-tertiary)}
+@media(prefers-color-scheme:dark){
+  .cell.hi-blue  {background:#0C447C;color:#B5D4F4}
+  .cell.hi-teal  {background:#085041;color:#9FE1CB}
+  .cell.hi-amber {background:#633806;color:#FAC775}
+  .cell.hi-coral {background:#712B13;color:#F5C4B3}
+  .cell.hi-purple{background:#3C3489;color:#CECBF6}
+  .cell.hi-red   {background:#791F1F;color:#F7C1C1}
+  .cell.hi-green {background:#27500A;color:#C0DD97}
+}
+.op-row{display:flex;align-items:center;gap:12px;justify-content:center;flex-wrap:wrap}
+.eq{font-size:22px;color:var(--color-text-secondary)}
+.eig-badge{display:inline-flex;align-items:center;padding:6px 16px;border-radius:var(--border-radius-md);font-size:14px;font-family:var(--font-mono);font-weight:500;margin:4px}
+.arrow-label{font-size:12px;color:var(--color-text-secondary);text-align:center;margin-top:4px}
+</style>
+</head>
+<body>
+
+<div class="step-nav">
+  <button class="step-btn active" onclick="showStep(0)">0 · Aufgabe & Verfahren</button>
+  <button class="step-btn" onclick="showStep(1)">1 · α berechnen</button>
+  <button class="step-btn" onclick="showStep(2)">2 · c und s</button>
+  <button class="step-btn" onclick="showStep(3)">3 · Rotation QᵀAQ</button>
+  <button class="step-btn" onclick="showStep(4)">4 · Eigenwerte & -vektoren</button>
+</div>
+
+<!-- Step 0 -->
+<div class="step-panel visible" id="p0">
+  <div class="card">
+    <p class="step-title">Aufgabe</p>
+    <p class="step-desc">Bestimme die Eigenwerte und Eigenvektoren der symmetrischen Matrix $A$ mit <strong>einem</strong> Jacobi-Rotationsschritt. Bei einer $2\times2$-Matrix gibt es nur ein Außerdiagonalelement — eine einzige Rotation diagonalisiert $A$ daher exakt.</p>
+    <div class="op-row" style="margin-top:1rem">
+      <div class="mat-wrap"><div class="mat-label">A (symmetrisch)</div>
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:repeat(2,64px)">
+          <div class="cell hi-blue">3</div><div class="cell hi-coral">4</div>
+          <div class="cell hi-coral">4</div><div class="cell hi-blue">−3</div>
+        </div><span class="brace">]</span></div>
+        <div class="arrow-label"><span style="color:var(--hl-blue)">■</span> Diagonale &nbsp; <span style="color:var(--hl-coral)">■</span> Pivot $a_{12}$</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <p class="step-title">Idee der Jacobi-Rotation</p>
+    <p class="step-desc">Man wählt das betragsgrößte Außerdiagonalelement $a_{i_0 j_0}$ als <em>Pivot</em> und konstruiert eine orthogonale Rotationsmatrix $Q$, die dieses Element auf $0$ dreht. Die Ähnlichkeitstransformation</p>
+    <p>$$ A^{(1)} \;=\; Q^\top A\, Q \qquad\text{mit}\qquad Q \;=\; \begin{pmatrix} \cteal{c} & \cpurple{s} \\[2pt] -\cpurple{s} & \cteal{c} \end{pmatrix} $$</p>
+    <p class="step-desc">erhält die Eigenwerte (gleiche wie $A$), macht aber $a_{i_0 j_0}^{(1)} = 0$. Die Rotationsparameter $\cteal{c}=\cos\varphi$ und $\cpurple{s}=\sin\varphi$ ergeben sich aus:</p>
+    <p>$$ \alpha = \frac{\cblue{a_{j_0 j_0}} - \cblue{a_{i_0 i_0}}}{2\,\ccoral{a_{i_0 j_0}}}, \qquad \cteal{c} = \sqrt{\tfrac{1}{2} + \tfrac{1}{2}\sqrt{\tfrac{\alpha^2}{1+\alpha^2}}}, \qquad \cpurple{s} = \frac{\operatorname{sign}(\alpha)}{2\,\cteal{c}\,\sqrt{1+\alpha^2}} $$</p>
+    <dl class="legend">
+      <dt>$A = (a_{ij})$</dt><dd>symmetrische Matrix, deren Eigenwerte/-vektoren gesucht sind</dd>
+      <dt>$i_0,\, j_0$</dt><dd>Indizes des gewählten Pivots ($i_0 \neq j_0$); hier $i_0=1,\ j_0=2$</dd>
+      <dt>$\ccoral{a_{i_0 j_0}}$</dt><dd>Pivot — das betragsgrößte Außerdiagonalelement, das annihiliert wird</dd>
+      <dt>$\cblue{a_{i_0 i_0}},\, \cblue{a_{j_0 j_0}}$</dt><dd>Diagonaleinträge in Pivotzeile/-spalte</dd>
+      <dt>$\alpha$</dt><dd>dimensionslose Hilfsgröße aus den Pivot-Einträgen</dd>
+      <dt>$\cteal{c}$</dt><dd>Kosinus des Rotationswinkels, $\cteal{c}=\cos\varphi$</dd>
+      <dt>$\cpurple{s}$</dt><dd>Sinus des Rotationswinkels, $\cpurple{s}=\sin\varphi$ (es gilt $c^2+s^2=1$)</dd>
+      <dt>$Q$</dt><dd>orthogonale Rotationsmatrix, $Q^\top Q = I$</dd>
+      <dt>$A^{(1)}$</dt><dd>transformierte Matrix $Q^\top A Q$; im $2\times2$-Fall diagonal</dd>
+      <dt>$\operatorname{sign}(\alpha)$</dt><dd>Vorzeichen von $\alpha$ ($+1$ oder $-1$)</dd>
+    </dl>
+  </div>
+  <div class="card">
+    <p class="step-title">Konkret für unsere Matrix</p>
+    <p class="step-desc">Das einzige Außerdiagonalelement ist $\ccoral{a_{12}} = \ccoral{4} \neq 0$, also Pivot mit $i_0 = 1,\ j_0 = 2$. Die relevanten Diagonaleinträge sind $\cblue{a_{11}} = \cblue{3}$ und $\cblue{a_{22}} = \cblue{-3}$. Damit werden in den nächsten Schritten nacheinander $\alpha$, dann $\cteal{c}$ und $\cpurple{s}$, dann $Q^\top A Q$ berechnet.</p>
+  </div>
+</div>
+
+<!-- Step 1 -->
+<div class="step-panel" id="p1">
+  <div class="card">
+    <p class="step-title">Schritt 1 — Hilfsgröße α</p>
+    <p class="step-desc">Einsetzen der Pivot-Einträge $\cblue{a_{22}}=\cblue{-3}$, $\cblue{a_{11}}=\cblue{3}$ und $\ccoral{a_{12}}=\ccoral{4}$ in die Formel für $\alpha$:</p>
+    <p>$$ \alpha \;=\; \frac{\cblue{a_{22}} - \cblue{a_{11}}}{2\,\ccoral{a_{12}}} \;=\; \frac{\cblue{-3} - \cblue{3}}{2\cdot\ccoral{4}} \;=\; \frac{-6}{8} \;=\; -\tfrac{3}{4} \;=\; -0{,}75 $$</p>
+    <p class="step-desc">Das Vorzeichen $\operatorname{sign}(\alpha) = -1$ wird später für $s$ gebraucht.</p>
+  </div>
+</div>
+
+<!-- Step 2 -->
+<div class="step-panel" id="p2">
+  <div class="card">
+    <p class="step-title">Schritt 2 — Rotationsparameter c und s</p>
+    <p class="step-desc">Zuerst die Hilfsterme aus $\alpha = -\tfrac34$:</p>
+    <p>$$ \alpha^2 = \tfrac{9}{16}, \qquad 1+\alpha^2 = \tfrac{25}{16}, \qquad \frac{\alpha^2}{1+\alpha^2} = \frac{9}{25}, \qquad \sqrt{1+\alpha^2} = \tfrac{5}{4} $$</p>
+    <p class="step-desc">Damit der Kosinus $\cteal{c}$:</p>
+    <p>$$ \cteal{c} \;=\; \sqrt{\tfrac{1}{2} + \tfrac{1}{2}\sqrt{\tfrac{9}{25}}} \;=\; \sqrt{\tfrac{1}{2} + \tfrac{1}{2}\cdot\tfrac{3}{5}} \;=\; \sqrt{\tfrac{4}{5}} \;=\; \cteal{\tfrac{2}{\sqrt5} \approx 0{,}8944} $$</p>
+    <p class="step-desc">Und der Sinus $\cpurple{s}$ mit $\operatorname{sign}(\alpha) = -1$:</p>
+    <p>$$ \cpurple{s} \;=\; \frac{\operatorname{sign}(\alpha)}{2\,\cteal{c}\,\sqrt{1+\alpha^2}} \;=\; \frac{-1}{2\cdot\cteal{\tfrac{2}{\sqrt5}}\cdot\tfrac{5}{4}} \;=\; \frac{-1}{\sqrt5} \;=\; \cpurple{-\tfrac{1}{\sqrt5} \approx -0{,}4472} $$</p>
+    <p class="step-desc">Kontrolle (Orthogonalität): $\cteal{c}^2 + \cpurple{s}^2 = \tfrac{4}{5} + \tfrac{1}{5} = 1$ &nbsp;✓</p>
+  </div>
+</div>
+
+<!-- Step 3 -->
+<div class="step-panel" id="p3">
+  <div class="card">
+    <p class="step-title">Schritt 3 — Rotationsmatrix und Transformation</p>
+    <p class="step-desc">Mit $\cteal{c}=\cteal{\tfrac{2}{\sqrt5}}$ und $\cpurple{s}=\cpurple{-\tfrac{1}{\sqrt5}}$ ergibt sich die Rotationsmatrix:</p>
+    <div class="op-row" style="margin:1rem 0">
+      <div class="mat-wrap"><div class="mat-label">Q</div>
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:repeat(2,64px)">
+          <div class="cell hi-teal">0.8944</div><div class="cell hi-purple">−0.4472</div>
+          <div class="cell hi-purple">0.4472</div><div class="cell hi-teal">0.8944</div>
+        </div><span class="brace">]</span></div>
+        <div class="arrow-label">$= \tfrac{1}{\sqrt5}\begin{pmatrix}2 & -1 \\ 1 & 2\end{pmatrix}$</div>
+      </div>
+    </div>
+    <p class="step-desc">Die Transformation $A^{(1)} = Q^\top A\,Q$ in zwei Schritten — zuerst $A\,Q$, dann von links mit $Q^\top$:</p>
+    <p>$$ A\,Q \;=\; \begin{pmatrix} 3 & 4 \\ 4 & -3 \end{pmatrix}\!\cdot\!\tfrac{1}{\sqrt5}\!\begin{pmatrix} 2 & -1 \\ 1 & 2 \end{pmatrix} \;=\; \tfrac{1}{\sqrt5}\begin{pmatrix} 10 & 5 \\ 5 & -10 \end{pmatrix} $$</p>
+    <p>$$ A^{(1)} = Q^\top (A\,Q) \;=\; \tfrac{1}{\sqrt5}\begin{pmatrix} 2 & 1 \\ -1 & 2 \end{pmatrix}\!\cdot\!\tfrac{1}{\sqrt5}\begin{pmatrix} 10 & 5 \\ 5 & -10 \end{pmatrix} \;=\; \tfrac{1}{5}\begin{pmatrix} 25 & 0 \\ 0 & -25 \end{pmatrix} $$</p>
+    <div class="op-row" style="margin-top:1rem">
+      <div class="mat-wrap"><div class="mat-label">A⁽¹⁾ = QᵀAQ</div>
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:repeat(2,64px)">
+          <div class="cell hi-teal">5</div><div class="cell zero">0</div>
+          <div class="cell zero">0</div><div class="cell hi-green">−5</div>
+        </div><span class="brace">]</span></div>
+        <div class="arrow-label">Außerdiagonale = 0 → diagonalisiert</div>
+      </div>
+    </div>
+    <p class="step-desc" style="margin-top:8px">Das Pivotelement $a_{12}$ ist auf $0$ gedreht — bei $2\times2$ ist die Matrix damit vollständig diagonal.</p>
+  </div>
+</div>
+
+<!-- Step 4 -->
+<div class="step-panel" id="p4">
+  <div class="card">
+    <p class="step-title">Eigenwerte ablesen</p>
+    <p class="step-desc">Die Eigenwerte stehen auf der Diagonale von $A^{(1)}$:</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:1rem 0">
+      <span class="eig-badge" style="background:#F7C1C1;color:#791F1F">λ₁ = +5</span>
+      <span class="eig-badge" style="background:#F7C1C1;color:#791F1F">λ₂ = −5</span>
+    </div>
+    <p class="step-desc">Gegenprobe über das charakteristische Polynom:</p>
+    <p>$$ \det(A - \lambda I) = (3-\lambda)(-3-\lambda) - 4\cdot4 = \lambda^2 - 25 \stackrel{!}{=} 0 \;\Rightarrow\; \lambda_{1,2} = \cred{\pm 5} \quad✓ $$</p>
+  </div>
+  <div class="card">
+    <p class="step-title">Eigenvektoren = Spalten von Q</p>
+    <p class="step-desc">Die zugehörigen (normierten) Eigenvektoren sind genau die Spalten der Rotationsmatrix $Q$ — Spalte 1 gehört zu $\lambda_1$, Spalte 2 zu $\lambda_2$:</p>
+    <div class="op-row" style="margin:1rem 0;gap:24px">
+      <div class="mat-wrap"><div class="mat-label">v₁ (zu λ₁ = +5)</div>
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:64px">
+          <div class="cell hi-teal">0.8944</div><div class="cell hi-teal">0.4472</div>
+        </div><span class="brace">]</span></div>
+        <div class="arrow-label">$= \tfrac{1}{\sqrt5}(2,\,1)^\top$</div>
+      </div>
+      <div class="mat-wrap"><div class="mat-label">v₂ (zu λ₂ = −5)</div>
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:64px">
+          <div class="cell hi-green">−0.4472</div><div class="cell hi-green">0.8944</div>
+        </div><span class="brace">]</span></div>
+        <div class="arrow-label">$= \tfrac{1}{\sqrt5}(-1,\,2)^\top$</div>
+      </div>
+    </div>
+    <p class="step-desc">Verifikation $A\,v = \lambda\,v$:</p>
+    <p>$$ A\,v_1 = \begin{pmatrix} 3 & 4 \\ 4 & -3 \end{pmatrix}\tfrac{1}{\sqrt5}\begin{pmatrix} 2 \\ 1 \end{pmatrix} = \tfrac{1}{\sqrt5}\begin{pmatrix} 10 \\ 5 \end{pmatrix} = \cred{5}\cdot\tfrac{1}{\sqrt5}\begin{pmatrix} 2 \\ 1 \end{pmatrix} = \cred{5}\,v_1 \quad✓ $$</p>
+    <p>$$ A\,v_2 = \begin{pmatrix} 3 & 4 \\ 4 & -3 \end{pmatrix}\tfrac{1}{\sqrt5}\begin{pmatrix} -1 \\ 2 \end{pmatrix} = \tfrac{1}{\sqrt5}\begin{pmatrix} 5 \\ -10 \end{pmatrix} = \cred{-5}\cdot\tfrac{1}{\sqrt5}\begin{pmatrix} -1 \\ 2 \end{pmatrix} = \cred{-5}\,v_2 \quad✓ $$</p>
+    <p class="step-desc" style="margin-top:8px">Die Eigenvektoren stehen senkrecht aufeinander ($v_1 \cdot v_2 = 0$) — typisch für symmetrische Matrizen. Bei größeren Matrizen liefert <em>ein</em> Schritt keine Diagonalmatrix; man wiederholt die Rotation über wechselnde Pivots (Sweeps), bis alle Außerdiagonalelemente klein genug sind, und akkumuliert die $Q$ zur Eigenvektormatrix.</p>
+  </div>
+</div>
+
+<script>
+function showStep(i){
+  document.querySelectorAll('.step-panel').forEach((p,j)=>p.classList.toggle('visible',j===i));
+  document.querySelectorAll('.step-btn').forEach((b,j)=>b.classList.toggle('active',j===i));
+}
+</script>
+</body>
+</html>

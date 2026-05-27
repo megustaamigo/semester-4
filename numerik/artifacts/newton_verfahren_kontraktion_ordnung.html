@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Newton-Verfahren — Kontraktion & Konvergenzordnung</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ],
+          trust: true,
+          strict: 'ignore',
+          macros: {
+            '\\cblue':   '\\htmlClass{c-blue}{#1}',
+            '\\cteal':   '\\htmlClass{c-teal}{#1}',
+            '\\camber':  '\\htmlClass{c-amber}{#1}',
+            '\\ccoral':  '\\htmlClass{c-coral}{#1}',
+            '\\cpurple': '\\htmlClass{c-purple}{#1}',
+            '\\cred':    '\\htmlClass{c-red}{#1}',
+            '\\cgreen':  '\\htmlClass{c-green}{#1}'
+          }
+        });"></script>
+<style>
+.legend{font-size:13px;color:var(--color-text-secondary);line-height:1.7;background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 16px;margin:10px 0;display:grid;grid-template-columns:max-content 1fr;column-gap:14px;row-gap:6px;align-items:baseline}
+.legend dt{font-family:var(--font-mono);color:var(--color-text-primary);font-weight:500;margin:0}
+.legend dd{margin:0}
+.katex{font-size:0.85em}
+.katex-display{margin:0.5em 0}
+:root {
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #f4f4f5;
+  --color-text-primary: #18181b;
+  --color-text-secondary: #52525b;
+  --color-text-tertiary: #a1a1aa;
+  --color-border-primary: #d4d4d8;
+  --color-border-secondary: #e4e4e7;
+  --color-border-tertiary: #f4f4f5;
+  --border-radius-md: 6px;
+  --border-radius-lg: 10px;
+  --hl-blue:   #0C447C;
+  --hl-teal:   #085041;
+  --hl-amber:  #633806;
+  --hl-coral:  #712B13;
+  --hl-purple: #3C3489;
+  --hl-red:    #791F1F;
+  --hl-green:  #27500A;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background-primary: #1a1a1a;
+    --color-background-secondary: #2a2a2a;
+    --color-text-primary: #f4f4f5;
+    --color-text-secondary: #a1a1aa;
+    --color-text-tertiary: #71717a;
+    --color-border-primary: #52525b;
+    --color-border-secondary: #3f3f46;
+    --color-border-tertiary: #27272a;
+    --hl-blue:   #B5D4F4;
+    --hl-teal:   #9FE1CB;
+    --hl-amber:  #FAC775;
+    --hl-coral:  #F5C4B3;
+    --hl-purple: #CECBF6;
+    --hl-red:    #F7C1C1;
+    --hl-green:  #C0DD97;
+  }
+  body { background: #18181b; color: #f4f4f5; }
+}
+body { font-family: var(--font-sans); padding: 1.5rem; max-width: 1100px; margin: 0 auto; }
+
+.c-blue   { color: var(--hl-blue);   font-weight: 600 }
+.c-teal   { color: var(--hl-teal);   font-weight: 600 }
+.c-amber  { color: var(--hl-amber);  font-weight: 600 }
+.c-coral  { color: var(--hl-coral);  font-weight: 600 }
+.c-purple { color: var(--hl-purple); font-weight: 600 }
+.c-red    { color: var(--hl-red);    font-weight: 600 }
+.c-green  { color: var(--hl-green);  font-weight: 600 }
+
+.step-nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.5rem}
+.step-btn{padding:6px 14px;font-size:13px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);cursor:pointer}
+.step-btn.active{background:var(--color-background-secondary);color:var(--color-text-primary);border-color:var(--color-border-primary);font-weight:500}
+.step-panel{display:none}
+.step-panel.visible{display:block}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:1rem}
+.step-title{font-size:16px;font-weight:500;color:var(--color-text-primary);margin:0 0 8px}
+.step-desc{font-size:14px;color:var(--color-text-secondary);line-height:1.6;margin:0 0 8px}
+.res-badge{display:inline-flex;align-items:center;padding:6px 16px;border-radius:var(--border-radius-md);font-size:14px;font-family:var(--font-mono);font-weight:500;margin:4px}
+.conv-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+.conv-table th{text-align:left;padding:6px 8px;color:var(--color-text-secondary);font-weight:500;border-bottom:0.5px solid var(--color-border-tertiary)}
+.conv-table td{padding:5px 8px;color:var(--color-text-primary);border-bottom:0.5px solid var(--color-border-tertiary);font-family:var(--font-mono);font-size:13px}
+.conv-table tr:last-child td{border-bottom:none}
+.note-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;font-size:13px;color:var(--color-text-secondary);line-height:1.6}
+.note-grid strong{color:var(--color-text-primary)}
+</style>
+</head>
+<body>
+
+<div class="step-nav">
+  <button class="step-btn active" onclick="showStep(0)">0 · Aufgabe & Verfahren</button>
+  <button class="step-btn" onclick="showStep(1)">a · Φ, Φ′, Φ″</button>
+  <button class="step-btn" onclick="showStep(2)">b · Kontraktion</button>
+  <button class="step-btn" onclick="showStep(3)">c · Konvergenzordnung</button>
+  <button class="step-btn" onclick="showStep(4)">d · Funktion g</button>
+</div>
+
+<!-- Step 0 -->
+<div class="step-panel visible" id="p0">
+  <div class="card">
+    <p class="step-title">Aufgabe</p>
+    <p class="step-desc">Gegeben ist die Funktion</p>
+    <p>$$ \cblue{f(x)} = 1 - \frac{3}{x^2} $$</p>
+    <p class="step-desc">Die Nullstelle folgt aus $f(x)=0 \;\Leftrightarrow\; x^2 = 3$, also $\cgreen{x^* = \sqrt3 \approx 1{,}7321}$. Untersucht werden Iterationsfunktion, Kontraktion und Konvergenzordnung des Newton-Verfahrens.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+      <span class="res-badge" style="background:#C0DD97;color:#27500A">Nullstelle x* = √3 ≈ 1.7321</span>
+    </div>
+  </div>
+  <div class="card">
+    <p class="step-title">Newton-Verfahren als Fixpunktiteration</p>
+    <p class="step-desc">Das Newton-Verfahren ist eine Fixpunktiteration $x_{k+1} = \Phi(x_k)$ mit der Iterationsfunktion</p>
+    <p>$$ x_{k+1} = \cteal{x_k} - \frac{\cblue{f(x_k)}}{\camber{f'(x_k)}} \;=\; \Phi(\cteal{x_k}), \qquad \Phi(x) = x - \frac{\cblue{f(x)}}{\camber{f'(x)}} $$</p>
+    <dl class="legend">
+      <dt>$\cblue{f}$</dt><dd>Funktion, deren Nullstelle $x^*$ gesucht ist</dd>
+      <dt>$\camber{f'}$</dt><dd>erste Ableitung von $f$</dd>
+      <dt>$\cteal{x_k}$</dt><dd>$k$-te Newton-Iterierte (Startwert $x_0$)</dd>
+      <dt>$\cgreen{x^*}$</dt><dd>gesuchte Nullstelle = Fixpunkt von $\Phi$ ($\Phi(x^*)=x^*$)</dd>
+      <dt>$\Phi$</dt><dd>Iterationsfunktion $\Phi(x) = x - f(x)/f'(x)$</dd>
+      <dt>$\ccoral{\Phi'},\ \cpurple{\Phi''}$</dt><dd>erste bzw. zweite Ableitung von $\Phi$</dd>
+      <dt>$\cred{a}$</dt><dd>Kontraktionszahl (Lipschitz-Konstante) $= \max_{[3/2,\,2]}|\Phi'|$</dd>
+      <dt>$p$</dt><dd>Konvergenzordnung des Verfahrens</dd>
+      <dt>$m$</dt><dd>Vielfachheit der Nullstelle</dd>
+    </dl>
+    <p class="step-desc" style="margin-top:8px">Zwei Leitsätze für später: (1) $\Phi$ ist <strong>Kontraktion</strong> auf $[a,b]$, wenn $\Phi$ das Intervall in sich abbildet und $|\Phi'| \le a < 1$ dort gilt. (2) Die <strong>Ordnung</strong> ergibt sich aus den Ableitungen am Fixpunkt: ist $\Phi'(x^*)=0$, aber $\Phi''(x^*)\neq 0$, so konvergiert das Verfahren <em>quadratisch</em> ($p=2$).</p>
+  </div>
+</div>
+
+<!-- Step a -->
+<div class="step-panel" id="p1">
+  <div class="card">
+    <p class="step-title">a) Iterationsfunktion Φ bestimmen und vereinfachen</p>
+    <p class="step-desc">Zunächst die Ableitung von $f$:</p>
+    <p>$$ \cblue{f(x)} = 1 - 3x^{-2} \quad\Longrightarrow\quad \camber{f'(x)} = 6x^{-3} = \camber{\frac{6}{x^3}} $$</p>
+    <p class="step-desc">Einsetzen in $\Phi$ und kürzen — der Bruch $f/f'$ vereinfacht sich vollständig:</p>
+    <p>$$ \Phi(x) = x - \frac{\cblue{1 - \tfrac{3}{x^2}}}{\camber{\tfrac{6}{x^3}}} = x - \frac{\cblue{x^2-3}}{x^2}\cdot\frac{x^3}{\camber{6}} = x - \frac{x^3 - 3x}{6} $$</p>
+    <p>$$ \Rightarrow\quad \boxed{\;\Phi(x) = \cteal{\tfrac{3}{2}\,x - \tfrac{1}{6}\,x^3}\;} $$</p>
+    <p class="step-desc">Die Ableitungen von $\Phi$ sind nun elementar:</p>
+    <p>$$ \ccoral{\Phi'(x)} = \tfrac{3}{2} - \tfrac{1}{2}x^2 = \ccoral{\frac{3 - x^2}{2}}, \qquad \cpurple{\Phi''(x)} = \cpurple{-x} $$</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+      <span class="res-badge" style="background:#9FE1CB;color:#085041">Φ(x) = 3/2·x − 1/6·x³</span>
+      <span class="res-badge" style="background:#F5C4B3;color:#712B13">Φ′(x) = (3 − x²)/2</span>
+      <span class="res-badge" style="background:#CECBF6;color:#3C3489">Φ″(x) = −x</span>
+    </div>
+  </div>
+</div>
+
+<!-- Step b -->
+<div class="step-panel" id="p2">
+  <div class="card">
+    <p class="step-title">b) Φ ist Kontraktion auf [3/2, 2]</p>
+    <p class="step-desc">Eine Kontraktion erfordert zweierlei: <strong>Selbstabbildung</strong> $\Phi\!\left([\tfrac32,2]\right)\subseteq[\tfrac32,2]$ und eine <strong>Lipschitz-Schranke</strong> $|\Phi'| \le a < 1$.</p>
+  </div>
+  <div class="card">
+    <p class="step-title">Selbstabbildung</p>
+    <p class="step-desc">$\Phi$ wächst für $\ccoral{\Phi'}>0$ (also $x<\sqrt3$) und fällt für $x>\sqrt3$ — das Maximum liegt bei $x=\sqrt3$. Werte an den kritischen Stellen:</p>
+    <table class="conv-table">
+      <thead><tr><th>x</th><th>Φ(x)</th><th>Φ′(x) = (3 − x²)/2</th><th>|Φ′(x)|</th></tr></thead>
+      <tbody>
+        <tr><td>3/2 = 1.5</td><td>27/16 = 1.6875</td><td>+0.375</td><td>0.375</td></tr>
+        <tr><td>√3 ≈ 1.7321</td><td>√3 ≈ 1.7321 &nbsp;(max)</td><td>0</td><td>0</td></tr>
+        <tr><td>2</td><td>5/3 ≈ 1.6667</td><td>−0.5</td><td>0.5 &nbsp;(max)</td></tr>
+      </tbody>
+    </table>
+    <p class="step-desc" style="margin-top:8px">Damit gilt $\Phi\!\left([\tfrac32,2]\right) = \left[\tfrac53,\ \sqrt3\right] \approx [1{,}6667,\ 1{,}7321] \;\subset\; [\tfrac32, 2]$. Die Selbstabbildung ist erfüllt. ✓</p>
+  </div>
+  <div class="card">
+    <p class="step-title">Kontraktionszahl a</p>
+    <p class="step-desc">Auf $[\tfrac32,2]$ ist $x^2 \in [2{,}25,\,4]$, also $\ccoral{|\Phi'(x)|} = \dfrac{|3 - x^2|}{2}$ am größten dort, wo $x^2$ maximal ist — am rechten Rand $x=2$:</p>
+    <p>$$ \cred{a} \;=\; \max_{x\in[3/2,\,2]} \ccoral{|\Phi'(x)|} \;=\; \ccoral{|\Phi'(2)|} \;=\; \frac{|3 - 4|}{2} \;=\; \cred{\tfrac{1}{2}} \;\le\; \tfrac{1}{2} \;<\; 1 $$</p>
+    <p class="step-desc">Da $\Phi$ das Intervall in sich abbildet <em>und</em> $\cred{a} = \tfrac12 < 1$, ist $\Phi$ nach dem Banachschen Fixpunktsatz eine Kontraktion mit eindeutigem Fixpunkt $\cgreen{x^*=\sqrt3}$. ✓</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+      <span class="res-badge" style="background:#F7C1C1;color:#791F1F">Kontraktionszahl a = 1/2 ≤ 1/2</span>
+    </div>
+  </div>
+</div>
+
+<!-- Step c -->
+<div class="step-panel" id="p3">
+  <div class="card">
+    <p class="step-title">c) Konvergenzordnung für x₀ ∈ [3/2, 2]</p>
+    <p class="step-desc">Der Fixpunkt $\cgreen{x^*=\sqrt3} \approx 1{,}7321$ liegt in $[\tfrac32,2]$, und es ist eine <strong>einfache</strong> Nullstelle, denn $\camber{f'(\sqrt3)} = \tfrac{6}{(\sqrt3)^3} = \tfrac{2}{\sqrt3} \approx 1{,}155 \neq 0$. Die Ordnung liest man an den Ableitungen von $\Phi$ am Fixpunkt ab:</p>
+    <p>$$ \ccoral{\Phi'(\sqrt3)} = \frac{3 - (\sqrt3)^2}{2} = \frac{3-3}{2} = \ccoral{0}, \qquad \cpurple{\Phi''(\sqrt3)} = \cpurple{-\sqrt3} \neq 0 $$</p>
+    <p class="step-desc">Mit $\Phi'(x^*)=0$ und $\Phi''(x^*)\neq0$ folgt aus der Taylor-Entwicklung die <strong>quadratische Konvergenz</strong> ($p=2$):</p>
+    <p>$$ x_{k+1} - x^* = \tfrac{1}{2}\cpurple{\Phi''(\xi)}\,(x_k - x^*)^2 \quad\Longrightarrow\quad |e_{k+1}| \approx \frac{|\cpurple{\Phi''(x^*)}|}{2}\,|e_k|^2 = \frac{\sqrt3}{2}\,|e_k|^2 $$</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0">
+      <span class="res-badge" style="background:#C0DD97;color:#27500A">Ordnung p = 2 (quadratisch)</span>
+    </div>
+  </div>
+  <div class="card">
+    <p class="step-title">Numerische Bestätigung (Start x₀ = 2)</p>
+    <p class="step-desc">Die Iterierten $x_{k+1}=\Phi(x_k)=\tfrac32 x_k - \tfrac16 x_k^3$. Der Fehler $|e_k| = |x_k - \sqrt3|$ quadriert sich pro Schritt — die Zahl korrekter Stellen verdoppelt sich:</p>
+    <table class="conv-table">
+      <thead><tr><th>k</th><th>x_k</th><th>|e_k| = |x_k − √3|</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>2.00000000</td><td>2.7 · 10⁻¹</td></tr>
+        <tr><td>1</td><td>1.66666667</td><td>6.5 · 10⁻²</td></tr>
+        <tr><td>2</td><td>1.72839506</td><td>3.7 · 10⁻³</td></tr>
+        <tr><td>3</td><td>1.73203820</td><td>1.3 · 10⁻⁵</td></tr>
+        <tr><td>4</td><td>1.73205081</td><td>1.4 · 10⁻¹⁰</td></tr>
+      </tbody>
+    </table>
+    <p class="step-desc" style="margin-top:8px">Fehler-Exponenten ≈ −1, −2, −3, −5, −10: jeder Schritt etwa verdoppelt die Genauigkeit → typisch quadratisch.</p>
+  </div>
+</div>
+
+<!-- Step d -->
+<div class="step-panel" id="p4">
+  <div class="card">
+    <p class="step-title">d) Höchste Ordnung für g(x)</p>
+    <p class="step-desc">Gegeben $g(x) = 1 - \dfrac{6}{x^2} + \dfrac{9}{x^4}$ mit denselben Nullstellen wie $f$. Entscheidender Schritt — $g$ ist ein vollständiges Quadrat:</p>
+    <p>$$ g(x) = 1 - \frac{6}{x^2} + \frac{9}{x^4} = \left(1 - \frac{3}{x^2}\right)^{2} = \cblue{f(x)}^{2} $$</p>
+    <p class="step-desc">Da $f$ bei $\cgreen{x^*=\sqrt3}$ eine einfache Nullstelle hat, besitzt $g = f^2$ dort eine <strong>doppelte</strong> Nullstelle ($m=2$). Bei einer mehrfachen Nullstelle verliert das Newton-Verfahren die quadratische Konvergenz: es konvergiert nur noch <strong>linear</strong> mit dem Faktor</p>
+    <p>$$ \Phi_g'(x^*) = 1 - \frac{1}{m} = 1 - \frac{1}{2} = \cred{\tfrac{1}{2}} \neq 0 \quad\Longrightarrow\quad p = 1 $$</p>
+    <p class="step-desc">Weil $\Phi_g'(x^*) = \tfrac12 \neq 0$ ist, kann $g$ <strong>höchstens mit Ordnung 1</strong> (linear) konvergieren — die Fehlerreduktion beträgt asymptotisch nur Faktor $\tfrac12$ pro Schritt statt einer Quadrierung.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0">
+      <span class="res-badge" style="background:#F7C1C1;color:#791F1F">g: höchstens Ordnung p = 1 (linear)</span>
+    </div>
+    <div class="note-grid">
+      <div><strong>Warum so?</strong><br>Newton ist quadratisch nur an <em>einfachen</em> Nullstellen ($f'(x^*)\neq0$). Quadrieren von $f$ macht die Nullstelle doppelt — $g'(x^*)=0$ — und bremst das Verfahren auf lineare Geschwindigkeit.</div>
+      <div><strong>Vergleich f vs. g</strong><br>$f$: einfache Nullstelle → $p=2$, Fehler quadriert sich. $g=f^2$: doppelte Nullstelle → $p=1$, Fehler nur ×½ pro Schritt.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showStep(i){
+  document.querySelectorAll('.step-panel').forEach((p,j)=>p.classList.toggle('visible',j===i));
+  document.querySelectorAll('.step-btn').forEach((b,j)=>b.classList.toggle('active',j===i));
+}
+</script>
+</body>
+</html>

@@ -49,6 +49,10 @@ tags: [web-engineering, index]
 ### Vorlesung 7 — JavaScript Teil 2
 - [[web-engineering/lectures/07/webeng-11-javascript-teil2|11 — JavaScript Teil 2]]
 
+### Vorlesung 8 — Fetch & REST
+- [[web-engineering/lectures/08/webeng-12-javascript-fetch|12 — JavaScript Fetch (AJAX, DOM, Fetch)]]
+- [[web-engineering/lectures/08/webeng-13-restful-services|13 — RESTful Services]]
+
 ## Exercises
 
 - [[web-engineering/exercises/webeng-exercise-01-html-css|Exercise 1 — HTML & CSS Landingpage]]
@@ -66,3 +70,5 @@ tags: [web-engineering, index]
 - [[web-engineering/resources/09-nodejs-Teil1.pdf|09-nodejs-Teil1.pdf]]
 - [[web-engineering/resources/10-nodejs-Teil2.pdf|10-nodejs-Teil2.pdf]]
 - [[web-engineering/resources/11-JavaScript-Teil2.pdf|11-JavaScript-Teil2.pdf]]
+- [[web-engineering/resources/12-JavaScript-Fetch.pdf|12-JavaScript-Fetch.pdf]]
+- [[web-engineering/resources/13-JavaScript-Rest.pdf|13-JavaScript-Rest.pdf]]
