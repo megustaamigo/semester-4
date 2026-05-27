@@ -10,6 +10,16 @@ This is an Obsidian vault for university coursework in semester 4.
 - `csharp` -> `csharp/`
 - `data-science` -> `data-science/`
 - `large-scale-it` -> `large-scale-it/`
+- `linear-algebra-homework` -> `linear-algebra-homework/` (special: homework correction, see below)
+
+## Linear Algebra Homework Correction (`linear-algebra-homework/`)
+
+Special course for **correcting student homework**, not lecture notes. No prefixes/frontmatter/index/lernziele.
+
+- Top-level folders are weeks: `week-7` … `week-13`. Each week has `exercises/`, `sample-solutions/`, `student-solutions/`, `corrections/`.
+- **Only tasks 5, 6, 7, 8 are corrected.** Ignore 1–4.
+- Intake (user always says the week N): exercise sheet (`LA2Blatt07.pdf`) -> `week-N/exercises/`; per-task sample solutions (`LA2_Blatt07_A5_Lsg.pdf`…`A8_Lsg.pdf`) -> `week-N/sample-solutions/`; folder of student PDFs (`la2_<surname>_<firstname>_h<NN>.pdf`) -> `week-N/student-solutions/`. Always move, not copy.
+- Correct via the **`/correct-homework <week>`** skill (`.claude/skills/correct-homework/SKILL.md`): one concise correction MD per student in `corrections/`, pinpointing the exact error and grading each task 0–3 (3 way+outcome, 2 correct way/wrong outcome, 1 outcome-only/partial, 0 nothing; max 12). Defer to the skill for format and rubric.
 
 ## Lecture Numbering vs. Weeks (IMPORTANT)
 

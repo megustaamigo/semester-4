@@ -10,6 +10,7 @@ This is an Obsidian vault for university coursework in semester 4.
 - **C#** → `csharp/` — Active
 - **Introduction to Data Science** → `data-science/` — Active
 - **Large Scale IT and Cloud Computing** → `large-scale-it/` — Block course, starts in ~8 weeks
+- **Linear Algebra Homework Correction** → `linear-algebra-homework/` — Active. **Special course** for correcting student homework (not lecture notes) — see **Workflow: Linear Algebra Homework Correction** below. Does NOT follow the standard lecture-note conventions (no prefix/frontmatter/index/lernziele).
 
 ## Lecture Numbering vs. Weeks (IMPORTANT — read before creating lecture notes)
 
@@ -106,6 +107,27 @@ Same dual-location principle. Questions are found at the **end of the lecture PD
 3. When creating lecture notes, add a **"Fragen zur Selbstkontrolle"** section at the end that:
    - Links to the selbstkontrolle file
    - For each question: state the question in bold, then provide a **detailed answer based on the lecture material**
+
+## Workflow: Linear Algebra Homework Correction (`linear-algebra-homework/`)
+
+This course is **different** from all others: it is for **correcting student homework**, not for taking lecture notes. It does **not** use prefixes, frontmatter, an index file, lernziele, or any of the standard note conventions.
+
+**Structure:** weeks are the top-level folders (`week-7` … `week-13`). Each week contains:
+- `exercises/` — the exercise sheet PDF
+- `sample-solutions/` — one PDF per corrected task (A5–A8)
+- `student-solutions/` — one PDF per student
+- `corrections/` — output: one Markdown per student (written by the `/correct-homework` skill)
+
+**Scope:** **Only tasks 5, 6, 7, and 8 are ever corrected.** Ignore tasks 1–4 even if a student solved them.
+
+**File intake** (when the user provides files for a week N — they always say which week):
+1. Exercise sheet (e.g. `LA2Blatt07.pdf`) → move to `week-N/exercises/`.
+2. Per-task sample solutions (e.g. `LA2_Blatt07_A5_Lsg.pdf` … `A8_Lsg.pdf`) → move to `week-N/sample-solutions/`.
+3. A folder of ~12–17 student solution PDFs (`la2_<surname>_<firstname>_h<NN>.pdf`) → move all PDFs into `week-N/student-solutions/`.
+
+Always **move** (not copy) the provided files, mirroring the rest of the vault.
+
+**Correction:** invoke the **`/correct-homework <week>`** skill (`.claude/skills/correct-homework/SKILL.md`). It reads the sheet (tasks 5–8), the sample solutions, and every student PDF, then writes one concise correction MD per student into `corrections/` — pinpointing the **exact error location** and grading each task **0–3** (3 = way + outcome correct; 2 = correct way, wrong outcome; 1 = outcome only or partial; 0 = nothing). Max 12 points/sheet. It notifies with a summary table when done. The skill is the single source of truth for format and rubric — defer to it.
 
 ## Numerik HTML Artifacts
 

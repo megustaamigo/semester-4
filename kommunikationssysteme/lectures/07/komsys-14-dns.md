@@ -52,9 +52,9 @@ source: Kommunikationssysteme_14_DNS.pdf
 
 ```mermaid
 flowchart LR
-    H["hosta.firma1.com"] -->|IP-Adresse von www.fh-aachen.de ?| DNS[DNS-Server]
+    H["hosta.firma1.com"] -->|IP-Adresse von www .fh-aachen. de ?| DNS[DNS-Server]
     DNS -->|149.201.122.100| H
-    H -->|verbindet sich mit 149.201.122.100| W["www.fh-aachen.de"]
+    H -->|verbindet sich mit 149.201.122.100| W["www .fh-aachen. de"]
 ```
 
 > [!tip] Merke
