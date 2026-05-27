@@ -4,7 +4,28 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LU-Zerlegung 3×3</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ],
+          trust: true,
+          strict: 'ignore',
+          macros: {
+            '\\cblue':   '\\htmlClass{c-blue}{#1}',
+            '\\cteal':   '\\htmlClass{c-teal}{#1}',
+            '\\camber':  '\\htmlClass{c-amber}{#1}'
+          }
+        });"></script>
 <style>
+.legend{font-size:13px;color:var(--color-text-secondary);line-height:1.7;background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 16px;margin:10px 0;display:grid;grid-template-columns:max-content 1fr;column-gap:14px;row-gap:6px;align-items:baseline}
+.legend dt{font-family:var(--font-mono);color:var(--color-text-primary);font-weight:500;margin:0}
+.legend dd{margin:0}
+.katex{font-size:0.85em}
+.katex-display{margin:0.5em 0}
   :root {
     --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
@@ -18,7 +39,13 @@
     --color-border-tertiary: #f4f4f5;
     --border-radius-md: 6px;
     --border-radius-lg: 10px;
+    --hl-blue:   #0C447C;
+    --hl-teal:   #085041;
+    --hl-amber:  #633806;
   }
+  .c-blue  { color: var(--hl-blue);  font-weight: 600 }
+  .c-teal  { color: var(--hl-teal);  font-weight: 600 }
+  .c-amber { color: var(--hl-amber); font-weight: 600 }
   @media (prefers-color-scheme: dark) {
     :root {
       --color-background-primary: #1a1a1a;
@@ -26,6 +53,9 @@
       --color-text-primary: #f4f4f5;
       --color-text-secondary: #a1a1aa;
       --color-text-tertiary: #71717a;
+      --hl-blue:   #B5D4F4;
+      --hl-teal:   #9FE1CB;
+      --hl-amber:  #FAC775;
       --color-border-primary: #52525b;
       --color-border-secondary: #3f3f46;
       --color-border-tertiary: #27272a;
@@ -113,15 +143,28 @@
         </div>
       </div>
     </div>
+    <div class="card">
+      <p class="step-title">Allgemeine LU-Zerlegung (ohne Pivotisierung)</p>
+      <p class="step-desc">Für eine $n\times n$-Matrix $A = (a_{ij})$ erhält man $L \cdot U = A$ durch Gauß-Elimination. Im $k$-ten Eliminationsschritt ($k = 1, \ldots, n-1$):</p>
+      <p>$$ \cteal{m_{ik}} \;=\; \frac{a_{ik}^{(k)}}{\cblue{a_{kk}^{(k)}}} \qquad\text{für } i = k+1, \ldots, n \quad\text{(Multiplikatoren)} $$</p>
+      <p>$$ a_{ij}^{(k+1)} \;=\; a_{ij}^{(k)} \;-\; \cteal{m_{ik}}\,\cblue{a_{kj}^{(k)}} \qquad\text{für } i,j = k+1, \ldots, n \quad\text{(Zeile aktualisieren)} $$</p>
+      <p class="step-desc">Am Ende ist die obere Dreiecksmatrix $\cblue{U} = A^{(n)}$, und $\cteal{L}$ enthält die Multiplikatoren $\cteal{m_{ik}}$ unterhalb der Diagonale (mit Einsen auf der Diagonale).</p>
+      <dl class="legend">
+        <dt>$a_{ij}^{(k)}$</dt><dd>Eintrag $i,j$ <em>nach</em> $k-1$ Eliminationsschritten ($a_{ij}^{(1)} = a_{ij}$)</dd>
+        <dt>$\cblue{a_{kk}^{(k)}}$</dt><dd>Pivotelement im Schritt $k$ (muss $\neq 0$ sein — sonst Pivotisierung nötig)</dd>
+        <dt>$\cteal{m_{ik}}$</dt><dd>Multiplikator: Faktor, mit dem Zeile $k$ von Zeile $i$ abgezogen wird</dd>
+        <dt>$\cblue{U}$, $\cteal{L}$</dt><dd>obere bzw. untere Dreiecksmatrix mit $A = \cteal{L}\cdot\cblue{U}$</dd>
+        <dt>$n$</dt><dd>Dimension der Matrix</dd>
+      </dl>
+    </div>
   </div>
 
   <!-- Step 1 -->
   <div class="step-panel" id="p1">
     <div class="card">
       <p class="step-title">Schritt 1 — Erste Spalte eliminieren</p>
-      <p class="step-desc">Wähle Pivotelement: <strong>a₁₁ = 2</strong>. Berechne die Faktoren (Multiplikatoren) für die Zeilen darunter:</p>
-      <div class="formula">m₂₁ = a₂₁ / a₁₁ = 4 / 2 = 2
-m₃₁ = a₃₁ / a₁₁ = 8 / 2 = 4</div>
+      <p class="step-desc">Wähle Pivotelement: $\cblue{a_{11}} = \cblue{2}$. Berechne die Faktoren (Multiplikatoren) für die Zeilen darunter:</p>
+      <p>$$ \cteal{m_{21}} \;=\; \frac{a_{21}}{\cblue{a_{11}}} \;=\; \frac{4}{\cblue{2}} \;=\; \cteal{2} \qquad \cteal{m_{31}} \;=\; \frac{a_{31}}{\cblue{a_{11}}} \;=\; \frac{8}{\cblue{2}} \;=\; \cteal{4} $$</p>
       <p class="step-desc">Subtrahiere von Zeile 2 und 3 das m-fache der Zeile 1. Die erste Zeile von U ist gleich der ersten Zeile von A:</p>
       <div class="op-row" style="margin-top:1rem;">
         <div class="mat-wrap">
@@ -148,8 +191,8 @@ m₃₁ = a₃₁ / a₁₁ = 8 / 2 = 4</div>
   <div class="step-panel" id="p2">
     <div class="card">
       <p class="step-title">Schritt 2 — Zweite Spalte eliminieren</p>
-      <p class="step-desc">Neues Pivotelement: <strong>a₂₂ = 1</strong>. Faktor für Zeile 3:</p>
-      <div class="formula">m₃₂ = a₃₂ / a₂₂ = 3 / 1 = 3</div>
+      <p class="step-desc">Neues Pivotelement: $\cblue{a_{22}^{(2)}} = \cblue{1}$ (Wert nach Schritt 1). Faktor für Zeile 3:</p>
+      <p>$$ \cteal{m_{32}} \;=\; \frac{a_{32}^{(2)}}{\cblue{a_{22}^{(2)}}} \;=\; \frac{3}{\cblue{1}} \;=\; \cteal{3} $$</p>
       <p class="step-desc">Subtrahiere von Zeile 3 das 3-fache der Zeile 2:</p>
       <div class="op-row" style="margin-top:1rem;">
         <div class="mat-wrap">
@@ -173,11 +216,8 @@ m₃₁ = a₃₁ / a₁₁ = 8 / 2 = 4</div>
   <div class="step-panel" id="p3">
     <div class="card">
       <p class="step-title">Schritt 3 — L aufbauen</p>
-      <p class="step-desc">L enthält auf der Hauptdiagonale <strong>1en</strong> und unterhalb die berechneten Multiplikatoren m aus den vorherigen Schritten:</p>
-      <div class="formula">L = [ 1   0   0 ]
-    [ m₂₁ 1   0 ]   =  [ 1  0  0 ]
-    [ m₃₁ m₃₂ 1 ]      [ 2  1  0 ]
-                       [ 4  3  1 ]</div>
+      <p class="step-desc">$\cteal{L}$ enthält auf der Hauptdiagonale <strong>Einsen</strong> und unterhalb die zuvor berechneten Multiplikatoren $\cteal{m_{ik}}$:</p>
+      <p>$$ \cteal{L} \;=\; \begin{pmatrix} 1 & 0 & 0 \\ \cteal{m_{21}} & 1 & 0 \\ \cteal{m_{31}} & \cteal{m_{32}} & 1 \end{pmatrix} \;=\; \begin{pmatrix} 1 & 0 & 0 \\ \cteal{2} & 1 & 0 \\ \cteal{4} & \cteal{3} & 1 \end{pmatrix} $$</p>
       <div class="op-row" style="margin-top:1rem;">
         <div class="mat-wrap">
           <div class="mat-label">L</div>

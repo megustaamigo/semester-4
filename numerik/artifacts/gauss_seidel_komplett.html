@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gauß-Seidel-Verfahren — komplett</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ],
+          trust: true,
+          strict: 'ignore',
+          macros: {
+            '\\cblue':   '\\htmlClass{c-blue}{#1}',
+            '\\cteal':   '\\htmlClass{c-teal}{#1}',
+            '\\camber':  '\\htmlClass{c-amber}{#1}',
+            '\\ccoral':  '\\htmlClass{c-coral}{#1}',
+            '\\cpurple': '\\htmlClass{c-purple}{#1}',
+            '\\cred':    '\\htmlClass{c-red}{#1}',
+            '\\cgreen':  '\\htmlClass{c-green}{#1}'
+          }
+        });"></script>
+<style>
+.legend{font-size:13px;color:var(--color-text-secondary);line-height:1.7;background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 16px;margin:10px 0;display:grid;grid-template-columns:max-content 1fr;column-gap:14px;row-gap:6px;align-items:baseline}
+.legend dt{font-family:var(--font-mono);color:var(--color-text-primary);font-weight:500;margin:0}
+.legend dd{margin:0}
+.katex{font-size:0.85em}
+.katex-display{margin:0.5em 0}
+:root {
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #f4f4f5;
+  --color-text-primary: #18181b;
+  --color-text-secondary: #52525b;
+  --color-text-tertiary: #a1a1aa;
+  --color-border-primary: #d4d4d8;
+  --color-border-secondary: #e4e4e7;
+  --color-border-tertiary: #f4f4f5;
+  --border-radius-md: 6px;
+  --border-radius-lg: 10px;
+  --hl-blue:   #0C447C;
+  --hl-teal:   #085041;
+  --hl-amber:  #633806;
+  --hl-coral:  #712B13;
+  --hl-purple: #3C3489;
+  --hl-red:    #791F1F;
+  --hl-green:  #27500A;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background-primary: #1a1a1a;
+    --color-background-secondary: #2a2a2a;
+    --color-text-primary: #f4f4f5;
+    --color-text-secondary: #a1a1aa;
+    --color-text-tertiary: #71717a;
+    --color-border-primary: #52525b;
+    --color-border-secondary: #3f3f46;
+    --color-border-tertiary: #27272a;
+    --hl-blue:   #B5D4F4;
+    --hl-teal:   #9FE1CB;
+    --hl-amber:  #FAC775;
+    --hl-coral:  #F5C4B3;
+    --hl-purple: #CECBF6;
+    --hl-red:    #F7C1C1;
+    --hl-green:  #C0DD97;
+  }
+  body { background: #18181b; color: #f4f4f5; }
+}
+body { font-family: var(--font-sans); padding: 1.5rem; max-width: 1100px; margin: 0 auto; }
+
+.c-blue   { color: var(--hl-blue);   font-weight: 600 }
+.c-teal   { color: var(--hl-teal);   font-weight: 600 }
+.c-amber  { color: var(--hl-amber);  font-weight: 600 }
+.c-coral  { color: var(--hl-coral);  font-weight: 600 }
+.c-purple { color: var(--hl-purple); font-weight: 600 }
+.c-red    { color: var(--hl-red);    font-weight: 600 }
+.c-green  { color: var(--hl-green);  font-weight: 600 }
+
+.gs{font-family:var(--font-sans);padding:1rem 0}
+.step-nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.5rem}
+.step-btn{padding:6px 14px;font-size:13px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);cursor:pointer}
+.step-btn.active{background:var(--color-background-secondary);color:var(--color-text-primary);border-color:var(--color-border-primary);font-weight:500}
+.step-panel{display:none}
+.step-panel.visible{display:block}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:1rem}
+.step-title{font-size:16px;font-weight:500;color:var(--color-text-primary);margin:0 0 8px}
+.step-desc{font-size:14px;color:var(--color-text-secondary);line-height:1.6;margin:0 0 8px}
+.formula-block{font-size:14px;font-family:var(--font-mono);background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 14px;margin:8px 0;color:var(--color-text-primary);line-height:1.9;white-space:pre-wrap}
+.mat-wrap{display:flex;flex-direction:column;align-items:center}
+.mat-label{font-size:13px;color:var(--color-text-secondary);margin-bottom:4px}
+.mat-bracket{display:flex;align-items:center}
+.brace{font-size:44px;font-weight:200;color:var(--color-text-secondary);line-height:1}
+.mat-inner{display:grid;gap:2px;padding:4px 8px}
+.cell{width:52px;height:36px;display:flex;align-items:center;justify-content:center;font-size:14px;border-radius:4px;background:var(--color-background-secondary);color:var(--color-text-primary)}
+.cell.hi-blue{background:#B5D4F4;color:#0C447C;font-weight:500}
+.cell.hi-teal{background:#9FE1CB;color:#085041;font-weight:500}
+.cell.hi-amber{background:#FAC775;color:#633806;font-weight:500}
+.cell.hi-coral{background:#F5C4B3;color:#712B13;font-weight:500}
+.cell.hi-purple{background:#CECBF6;color:#3C3489;font-weight:500}
+.cell.hi-red{background:#F7C1C1;color:#791F1F;font-weight:500}
+.cell.hi-green{background:#C0DD97;color:#27500A;font-weight:500}
+.cell.zero{color:var(--color-text-tertiary)}
+.op-row{display:flex;align-items:center;gap:12px;justify-content:center;flex-wrap:wrap}
+.eq{font-size:22px;color:var(--color-text-secondary)}
+.progress-bar-wrap{height:8px;background:var(--color-background-secondary);border-radius:99px;overflow:hidden;margin-top:4px}
+.progress-bar{height:8px;border-radius:99px;background:#1D9E75}
+.conv-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+.conv-table th{text-align:left;padding:6px 8px;color:var(--color-text-secondary);font-weight:500;border-bottom:0.5px solid var(--color-border-tertiary)}
+.conv-table td{padding:5px 8px;color:var(--color-text-primary);border-bottom:0.5px solid var(--color-border-tertiary);font-family:var(--font-mono);font-size:13px}
+.conv-table tr:last-child td{border-bottom:none}
+.eig-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 16px;border-radius:var(--border-radius-md);font-size:14px;font-family:var(--font-mono);font-weight:500;margin:4px}
+.arrow-label{font-size:12px;color:var(--color-text-secondary);text-align:center;margin-top:4px}
+@media(prefers-color-scheme:dark){
+  .cell.hi-blue{background:#0C447C;color:#B5D4F4}
+  .cell.hi-teal{background:#085041;color:#9FE1CB}
+  .cell.hi-amber{background:#633806;color:#FAC775}
+  .cell.hi-coral{background:#712B13;color:#F5C4B3}
+  .cell.hi-purple{background:#3C3489;color:#CECBF6}
+  .cell.hi-red{background:#791F1F;color:#F7C1C1}
+  .cell.hi-green{background:#27500A;color:#C0DD97}
+}
+</style>
+</head>
+<body>
+
+<div class="gs">
+<div class="step-nav">
+  <button class="step-btn active" onclick="showStep(0)">0 · System</button>
+  <button class="step-btn" onclick="showStep(1)">1 · Iteration 1</button>
+  <button class="step-btn" onclick="showStep(2)">2 · Iteration 2</button>
+  <button class="step-btn" onclick="showStep(3)">3 · Iteration 3</button>
+  <button class="step-btn" onclick="showStep(4)">4 · Iteration 4</button>
+  <button class="step-btn" onclick="showStep(5)">5 · Konvergenz</button>
+  <button class="step-btn" onclick="showStep(6)">6 · Matrix B</button>
+  <button class="step-btn" onclick="showStep(7)">7 · Spektralradius</button>
+</div>
+
+<!-- Step 0 -->
+<div class="step-panel visible" id="p0">
+  <div class="card">
+    <p class="step-title">Das lineare Gleichungssystem</p>
+    <p class="step-desc">2×2-System A·x = b mit Startwert x⁽⁰⁾ = (0, 0). Die exakte Lösung ist x* = (−2, 3).</p>
+    <div class="op-row" style="margin-top:1rem">
+      <div class="mat-wrap"><div class="mat-label">A</div>
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:repeat(2,52px)">
+          <div class="cell hi-blue">2</div><div class="cell">2</div>
+          <div class="cell">1</div><div class="cell hi-blue">2</div>
+        </div><span class="brace">]</span></div>
+      </div>
+      <div class="eq">·</div>
+      <div class="mat-wrap"><div class="mat-label">x</div>
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:52px">
+          <div class="cell hi-teal">x₁</div><div class="cell hi-teal">x₂</div>
+        </div><span class="brace">]</span></div>
+      </div>
+      <div class="eq">=</div>
+      <div class="mat-wrap"><div class="mat-label">b</div>
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:52px">
+          <div class="cell hi-amber">2</div><div class="cell hi-amber">4</div>
+        </div><span class="brace">]</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <p class="step-title">Allgemeine Gauß-Seidel-Formel</p>
+    <p class="step-desc">Komponentenweise für beliebige Dimension $n$. Der Unterschied zu Jacobi: bereits aktualisierte Komponenten ($j &lt; i$) gehen sofort mit ihrem <em>neuen</em> Wert ein, die noch nicht aktualisierten ($j &gt; i$) mit ihrem <em>alten</em>:</p>
+    <p>$$ x_i^{(k+1)} \;=\; \frac{\,\camber{b_i} \;-\; \displaystyle\sum_{j < i} a_{ij}\,\ccoral{x_j^{(k+1)}} \;-\; \displaystyle\sum_{j > i} a_{ij}\,\cteal{x_j^{(k)}}\,}{\cblue{a_{ii}}} $$</p>
+    <p class="step-desc" style="text-align:center">für $i = 1, \ldots, n$ &nbsp;<strong>sequentiell</strong> (die Reihenfolge ist wichtig!)</p>
+    <dl class="legend">
+      <dt>$A = (a_{ij}) \in \mathbb{R}^{n\times n}$</dt><dd>Koeffizientenmatrix des Systems $A\,x = b$</dd>
+      <dt>$\cblue{a_{ii}}$</dt><dd>Diagonaleintrag (muss $\neq 0$ sein)</dd>
+      <dt>$a_{ij}$</dt><dd>Nicht-Diagonaleinträge</dd>
+      <dt>$\camber{b_i}$</dt><dd>$i$-te Komponente der rechten Seite $b$</dd>
+      <dt>$\ccoral{x_j^{(k+1)}}$</dt><dd>schon aktualisierte Komponente (in derselben Iteration vor $i$ berechnet)</dd>
+      <dt>$\cteal{x_j^{(k)}}$</dt><dd>noch alte Komponente aus der vorherigen Iteration</dd>
+      <dt>$n$</dt><dd>Dimension des Systems</dd>
+    </dl>
+    <p class="step-desc" style="margin-top:8px">Äquivalent in Matrixform: mit der Zerlegung $A = D + L + U$ (Diagonale + strikt untere + strikt obere Dreiecksmatrix) lautet ein Schritt</p>
+    <p>$$ (\cblue{D}+\cpurple{L})\,x^{(k+1)} \;=\; \camber{b} - \ccoral{U}\,x^{(k)} \quad\Longleftrightarrow\quad x^{(k+1)} \;=\; B_{\mathrm{GS}}\,x^{(k)} + c $$</p>
+    <p class="step-desc">mit Iterationsmatrix $B_{\mathrm{GS}} = -(\cblue{D}+\cpurple{L})^{-1}\,\ccoral{U}$ und $c = (\cblue{D}+\cpurple{L})^{-1}\,\camber{b}$.</p>
+  </div>
+  <div class="card">
+    <p class="step-title">Konkret für unser 2×2-System</p>
+    <p class="step-desc">Wie Jacobi — aber mit einem entscheidenden Unterschied: der neu berechnete Wert $\ccoral{x_1^{(k+1)}}$ wird <em>sofort</em> für die Berechnung von $x_2^{(k+1)}$ in <em>derselben</em> Iteration verwendet.</p>
+    <p>$$ x_1^{(k+1)} \;=\; \frac{\camber{b_1} - a_{12}\,\cteal{x_2^{(k)}}}{\cblue{a_{11}}} \qquad\text{\small ← benutzt alten Wert} $$</p>
+    <p>$$ x_2^{(k+1)} \;=\; \frac{\camber{b_2} - a_{21}\,\ccoral{x_1^{(k+1)}}}{\cblue{a_{22}}} \qquad\text{\small ← benutzt NEUEN $x_1$!} $$</p>
+    <p class="step-desc">Mit $a_{11}=a_{22}=\cblue{2}$, $a_{12}=2$, $a_{21}=1$, $\camber{b}=(\camber{2},\,\camber{4})^\top$:</p>
+    <p>$$ x_1^{(k+1)} \;=\; \frac{\camber{2} - 2\,\cteal{x_2^{(k)}}}{\cblue{2}} \;=\; 1 - \cteal{x_2^{(k)}} $$</p>
+    <p>$$ x_2^{(k+1)} \;=\; \frac{\camber{4} - 1\,\ccoral{x_1^{(k+1)}}}{\cblue{2}} \;=\; 2 - \tfrac{1}{2}\,\ccoral{x_1^{(k+1)}} $$</p>
+  </div>
+</div>
+
+<!-- Step 1: x⁽⁰⁾=amber, x⁽¹⁾=coral -->
+<div class="step-panel" id="p1">
+  <div class="card">
+    <p class="step-title">Iteration 1 — von x⁽⁰⁾ zu x⁽¹⁾</p>
+    <p class="step-desc">Startwert x⁽⁰⁾ = (0, 0). x₁ wird zuerst berechnet, dann sofort für x₂ genutzt:</p>
+    <div class="formula-block">x₁<sup>(1)</sup> = ( <span class="c-amber">2</span> − 2·<span class="c-amber">0</span> ) / <span class="c-blue">2</span>  =  2/2  = <span class="c-coral">1</span>   <span style="font-size:12px;color:var(--color-text-secondary)">← alter x₂</span>
+
+x₂<sup>(1)</sup> = ( <span class="c-amber">4</span> − 1·<span class="c-coral">1</span> ) / <span class="c-blue">2</span>  =  3/2  = <span class="c-coral">1.5</span>  <span style="font-size:12px;color:var(--hl-coral)">← NEUER x₁ !</span></div>
+    <div class="op-row" style="margin-top:1rem;gap:8px">
+      <div class="mat-wrap"><div class="mat-label">x⁽⁰⁾</div>
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:52px">
+          <div class="cell hi-amber">0</div><div class="cell hi-amber">0</div>
+        </div><span class="brace">]</span></div></div>
+      <div class="eq">→</div>
+      <div class="mat-wrap"><div class="mat-label">x⁽¹⁾</div>
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:52px">
+          <div class="cell hi-coral">1</div><div class="cell hi-coral">1.5</div>
+        </div><span class="brace">]</span></div></div>
+      <div class="mat-wrap"><div class="mat-label">x* (Ziel)</div>
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:52px">
+          <div class="cell hi-teal">−2</div><div class="cell hi-teal">3</div>
+        </div><span class="brace">]</span></div></div>
+    </div>
+    <div style="margin-top:1rem"><div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:4px">Fehler ‖x⁽¹⁾ − x*‖∞ = 3.0</div>
+      <div class="progress-bar-wrap"><div class="progress-bar" style="width:10%"></div></div></div>
+  </div>
+</div>
+
+<!-- Step 2: x⁽¹⁾=coral, x⁽²⁾=purple -->
+<div class="step-panel" id="p2">
+  <div class="card">
+    <p class="step-title">Iteration 2 — von x⁽¹⁾ zu x⁽²⁾</p>
+    <p class="step-desc">Basis: x⁽¹⁾ = (1, 1.5)</p>
+    <div class="formula-block">x₁<sup>(2)</sup> = ( <span class="c-amber">2</span> − 2·<span class="c-coral">1.5</span> ) / <span class="c-blue">2</span>  =  −1/2  = <span class="c-purple">−0.5</span>
+
+x₂<sup>(2)</sup> = ( <span class="c-amber">4</span> − 1·<span class="c-purple">−0.5</span> ) / <span class="c-blue">2</span>  =  4.5/2  = <span class="c-purple">2.25</span></div>
+    <div class="op-row" style="margin-top:1rem;gap:8px">
+      <div class="mat-wrap"><div class="mat-label">x⁽¹⁾</div>
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:52px">
+          <div class="cell hi-coral">1</div><div class="cell hi-coral">1.5</div>
+        </div><span class="brace">]</span></div></div>
+      <div class="eq">→</div>
+      <div class="mat-wrap"><div class="mat-label">x⁽²⁾</div>
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:52px">
+          <div class="cell hi-purple">−0.5</div><div class="cell hi-purple">2.25</div>
+        </div><span class="brace">]</span></div></div>
+      <div class="mat-wrap"><div class="mat-label">x* (Ziel)</div>
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:52px">
+          <div class="cell hi-teal">−2</div><div class="cell hi-teal">3</div>
+        </div><span class="brace">]</span></div></div>
+    </div>
+    <div style="margin-top:1rem"><div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:4px">Fehler ‖x⁽²⁾ − x*‖∞ = 1.5</div>
+      <div class="progress-bar-wrap"><div class="progress-bar" style="width:33%"></div></div></div>
+  </div>
+</div>
+
+<!-- Step 3: x⁽²⁾=purple, x⁽³⁾=blue -->
+<div class="step-panel" id="p3">
+  <div class="card">
+    <p class="step-title">Iteration 3 — von x⁽²⁾ zu x⁽³⁾</p>
+    <p class="step-desc">Basis: x⁽²⁾ = (−0.5, 2.25)</p>
+    <div class="formula-block">x₁<sup>(3)</sup> = ( <span class="c-amber">2</span> − 2·<span class="c-purple">2.25</span> ) / <span class="c-blue">2</span>  =  −2.5/2  = <span class="c-blue">−1.25</span>
+
+x₂<sup>(3)</sup> = ( <span class="c-amber">4</span> − 1·<span class="c-blue">−1.25</span> ) / <span class="c-blue">2</span>  =  5.25/2  = <span class="c-blue">2.625</span></div>
+    <div class="op-row" style="margin-top:1rem;gap:8px">
+      <div class="mat-wrap"><div class="mat-label">x⁽²⁾</div>
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:52px">
+          <div class="cell hi-purple">−0.5</div><div class="cell hi-purple">2.25</div>
+        </div><span class="brace">]</span></div></div>
+      <div class="eq">→</div>
+      <div class="mat-wrap"><div class="mat-label">x⁽³⁾</div>
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:52px">
+          <div class="cell hi-blue">−1.25</div><div class="cell hi-blue">2.625</div>
+        </div><span class="brace">]</span></div></div>
+      <div class="mat-wrap"><div class="mat-label">x* (Ziel)</div>
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:52px">
+          <div class="cell hi-teal">−2</div><div class="cell hi-teal">3</div>
+        </div><span class="brace">]</span></div></div>
+    </div>
+    <div style="margin-top:1rem"><div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:4px">Fehler ‖x⁽³⁾ − x*‖∞ = 0.75</div>
+      <div class="progress-bar-wrap"><div class="progress-bar" style="width:55%"></div></div></div>
+  </div>
+</div>
+
+<!-- Step 4: x⁽³⁾=blue, x⁽⁴⁾=green -->
+<div class="step-panel" id="p4">
+  <div class="card">
+    <p class="step-title">Iteration 4 — von x⁽³⁾ zu x⁽⁴⁾</p>
+    <p class="step-desc">Basis: x⁽³⁾ = (−1.25, 2.625)</p>
+    <div class="formula-block">x₁<sup>(4)</sup> = ( <span class="c-amber">2</span> − 2·<span class="c-blue">2.625</span> ) / <span class="c-blue">2</span>  =  −3.25/2  = <span class="c-green">−1.625</span>
+
+x₂<sup>(4)</sup> = ( <span class="c-amber">4</span> − 1·<span class="c-green">−1.625</span> ) / <span class="c-blue">2</span>  =  5.625/2  = <span class="c-green">2.8125</span></div>
+    <div class="op-row" style="margin-top:1rem;gap:8px">
+      <div class="mat-wrap"><div class="mat-label">x⁽³⁾</div>
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:52px">
+          <div class="cell hi-blue">−1.25</div><div class="cell hi-blue">2.625</div>
+        </div><span class="brace">]</span></div></div>
+      <div class="eq">→</div>
+      <div class="mat-wrap"><div class="mat-label">x⁽⁴⁾</div>
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:52px">
+          <div class="cell hi-green">−1.625</div><div class="cell hi-green">2.8125</div>
+        </div><span class="brace">]</span></div></div>
+      <div class="mat-wrap"><div class="mat-label">x* (Ziel)</div>
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:52px">
+          <div class="cell hi-teal">−2</div><div class="cell hi-teal">3</div>
+        </div><span class="brace">]</span></div></div>
+    </div>
+    <div style="margin-top:1rem"><div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:4px">Fehler ‖x⁽⁴⁾ − x*‖∞ = 0.375</div>
+      <div class="progress-bar-wrap"><div class="progress-bar" style="width:74%"></div></div></div>
+  </div>
+</div>
+
+<!-- Step 5 -->
+<div class="step-panel" id="p5">
+  <div class="card">
+    <p class="step-title">Konvergenzübersicht</p>
+    <p class="step-desc">Der Fehler halbiert sich pro Iteration — das entspricht exakt dem Spektralradius ρ(B) = 0.5 (→ Schritt 7).</p>
+    <table class="conv-table">
+      <thead><tr><th>k</th><th>x₁⁽ᵏ⁾</th><th>x₂⁽ᵏ⁾</th><th>‖·‖∞</th><th>Fortschritt</th></tr></thead>
+      <tbody id="ctbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Step 6: Iterationsmatrix -->
+<div class="step-panel" id="p6">
+  <div class="card">
+    <p class="step-title">Zerlegung A = D + L + U</p>
+    <p class="step-desc">Für Gauß-Seidel zerlegt man A in Diagonale D, strikt untere Dreiecksmatrix L und strikt obere Dreiecksmatrix U:</p>
+    <div class="op-row" style="margin:1rem 0;gap:10px">
+      <div class="mat-wrap"><div class="mat-label">A</div>
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:repeat(2,52px)">
+          <div class="cell hi-blue">2</div><div class="cell hi-coral">2</div>
+          <div class="cell hi-purple">1</div><div class="cell hi-blue">2</div>
+        </div><span class="brace">]</span></div></div>
+      <div class="eq">=</div>
+      <div class="mat-wrap"><div class="mat-label">D</div>
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:repeat(2,52px)">
+          <div class="cell hi-blue">2</div><div class="cell zero">0</div>
+          <div class="cell zero">0</div><div class="cell hi-blue">2</div>
+        </div><span class="brace">]</span></div>
+        <div class="arrow-label">Diagonale</div></div>
+      <div class="eq">+</div>
+      <div class="mat-wrap"><div class="mat-label">L</div>
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:repeat(2,52px)">
+          <div class="cell zero">0</div><div class="cell zero">0</div>
+          <div class="cell hi-purple">1</div><div class="cell zero">0</div>
+        </div><span class="brace">]</span></div>
+        <div class="arrow-label">Strikt untere</div></div>
+      <div class="eq">+</div>
+      <div class="mat-wrap"><div class="mat-label">U</div>
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:repeat(2,52px)">
+          <div class="cell zero">0</div><div class="cell hi-coral">2</div>
+          <div class="cell zero">0</div><div class="cell zero">0</div>
+        </div><span class="brace">]</span></div>
+        <div class="arrow-label">Strikt obere</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <p class="step-title">Berechnung der Iterationsmatrix $B_{\mathrm{GS}}$</p>
+    <p class="step-desc">Gauß-Seidel löst bei jedem Schritt $(\cblue{D}+\cpurple{L})\,x^{(k+1)} = \camber{b} - \ccoral{U}\,x^{(k)}$, woraus die Fixpunktform folgt:</p>
+    <p>$$ x^{(k+1)} \;=\; \underbrace{-(\cblue{D}+\cpurple{L})^{-1}\,\ccoral{U}}_{\displaystyle B_{\mathrm{GS}}}\;x^{(k)} \;+\; \underbrace{(\cblue{D}+\cpurple{L})^{-1}\,\camber{b}}_{\displaystyle c} $$</p>
+    <p class="step-desc" style="margin-top:8px">Berechne $(\cblue{D}+\cpurple{L})^{-1}$ mit $\det(\cblue{D}+\cpurple{L}) = \cblue{2}\cdot\cblue{2} - 0 = 4$:</p>
+    <div class="op-row" style="margin:1rem 0;gap:10px">
+      <div class="mat-wrap"><div class="mat-label">D + L</div>
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:repeat(2,52px)">
+          <div class="cell hi-blue">2</div><div class="cell zero">0</div>
+          <div class="cell hi-purple">1</div><div class="cell hi-blue">2</div>
+        </div><span class="brace">]</span></div></div>
+      <div class="eq">⁻¹ =</div>
+      <div class="mat-wrap"><div class="mat-label">(D+L)⁻¹ = ¼ ·</div>
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:repeat(2,52px)">
+          <div class="cell hi-blue">2</div><div class="cell zero">0</div>
+          <div class="cell hi-red">−1</div><div class="cell hi-blue">2</div>
+        </div><span class="brace">]</span></div></div>
+    </div>
+    <p class="step-desc">Dann B_GS = −(D+L)⁻¹ · U:</p>
+    <div class="op-row" style="margin:1rem 0;gap:10px">
+      <div style="font-size:14px;color:var(--color-text-secondary)">−¼ ·</div>
+      <div class="mat-wrap">
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:repeat(2,52px)">
+          <div class="cell hi-blue">2</div><div class="cell zero">0</div>
+          <div class="cell hi-red">−1</div><div class="cell hi-blue">2</div>
+        </div><span class="brace">]</span></div></div>
+      <div class="eq">·</div>
+      <div class="mat-wrap">
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:repeat(2,52px)">
+          <div class="cell zero">0</div><div class="cell hi-coral">2</div>
+          <div class="cell zero">0</div><div class="cell zero">0</div>
+        </div><span class="brace">]</span></div></div>
+      <div class="eq">=</div>
+      <div class="mat-wrap"><div class="mat-label">B_GS</div>
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:repeat(2,52px)">
+          <div class="cell zero">0</div><div class="cell hi-purple">−1</div>
+          <div class="cell zero">0</div><div class="cell hi-amber">0.5</div>
+        </div><span class="brace">]</span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Step 7: Spektralradius -->
+<div class="step-panel" id="p7">
+  <div class="card">
+    <p class="step-title">Eigenwerte von B_GS</p>
+    <p class="step-desc">B_GS ist eine obere Dreiecksmatrix — bei Dreiecksmatrizen stehen die Eigenwerte direkt auf der Hauptdiagonale:</p>
+    <div class="op-row" style="margin:1rem 0">
+      <div class="mat-wrap"><div class="mat-label">B_GS</div>
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:repeat(2,52px)">
+          <div class="cell hi-teal">0</div><div class="cell hi-purple">−1</div>
+          <div class="cell zero">0</div><div class="cell hi-amber">0.5</div>
+        </div><span class="brace">]</span></div></div>
+    </div>
+    <p>$$ \det\!\bigl(B_{\mathrm{GS}} - \lambda I\bigr) \;=\; (\cteal{0}-\lambda)(\camber{0.5}-\lambda) - (\cpurple{-1})\cdot 0 \;=\; \lambda(\lambda - \camber{0.5}) \;\stackrel{!}{=}\; 0 $$</p>
+    <p>$$ \Rightarrow\quad \lambda_1 = \cteal{0}, \qquad \lambda_2 = \camber{0.5} $$</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:1rem 0">
+      <span class="eig-badge" style="background:#9FE1CB;color:#085041">λ₁ = 0</span>
+      <span class="eig-badge" style="background:#FAC775;color:#633806">λ₂ = 0.5</span>
+    </div>
+  </div>
+  <div class="card">
+    <p class="step-title">Spektralradius und Konvergenzaussage</p>
+    <p>$$ \rho(B_{\mathrm{GS}}) \;=\; \max\bigl\{\,|\lambda_1|,\,|\lambda_2|\,\bigr\} \;=\; \max\bigl\{\,\cteal{0},\,\camber{0.5}\,\bigr\} \;=\; \camber{0.5} $$</p>
+    <div style="border-radius:var(--border-radius-lg);padding:14px 20px;text-align:center;margin:1rem 0;background:#EAF3DE;border:0.5px solid #C0DD97">
+      <div style="font-size:22px;font-weight:500;color:#27500A">ρ(B_GS) = 0.5 &lt; 1</div>
+      <div style="font-size:14px;color:#3B6D11;margin-top:6px">Das Gauß-Seidel-Verfahren konvergiert. Fehler halbiert sich pro Iteration.</div>
+    </div>
+    <div style="margin-top:1rem;display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;color:var(--color-text-secondary);line-height:1.6">
+      <div><strong style="color:var(--color-text-primary)">Vergleich mit Jacobi</strong><br>Für dieses System wäre ρ(B_J) = 1/√2 ≈ 0.707. Gauß-Seidel (0.5) konvergiert also deutlich schneller.</div>
+      <div><strong style="color:var(--color-text-primary)">Sofortige Nutzung</strong><br>Der Vorteil kommt direkt daher, dass x₁⁽ᵏ⁺¹⁾ sofort in derselben Iteration für x₂ verwendet wird.</div>
+      <div><strong style="color:var(--color-text-primary)">Fehlerreduktion</strong><br>Nach k Iterationen gilt ‖e⁽ᵏ⁾‖ ≤ 0.5ᵏ · ‖e⁽⁰⁾‖. Nach 10 Schritten ist der Fehler &lt; 0.1% des Anfangsfehlers.</div>
+      <div><strong style="color:var(--color-text-primary)">Fixpunkt</strong><br>Die Lösung x* = (−2, 3) ist der einzige Fixpunkt der Iteration x = B_GS·x + c mit c = (D+L)⁻¹·b = (1, 1.5)ᵀ.</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+const iters=[[0,0],[1,1.5],[-0.5,2.25],[-1.25,2.625],[-1.625,2.8125],[-1.8125,2.90625],[-1.90625,2.953125],[-1.953125,2.9765625]];
+const maxErr=3.0;
+function buildTable(){
+  const tb=document.getElementById('ctbody');
+  iters.forEach((v,k)=>{
+    const e=Math.max(Math.abs(v[0]+2),Math.abs(v[1]-3));
+    const pct=Math.max(0,Math.min(100,100*(1-e/maxErr)));
+    const bar=`<div style="width:80px;height:7px;background:var(--color-background-secondary);border-radius:99px;overflow:hidden;display:inline-block;vertical-align:middle"><div style="width:${pct.toFixed(0)}%;height:100%;background:#1D9E75;border-radius:99px"></div></div>`;
+    tb.innerHTML+=`<tr><td>${k}</td><td>${v[0].toFixed(6)}</td><td>${v[1].toFixed(6)}</td><td>${e.toFixed(6)}</td><td>${bar}</td></tr>`;
+  });
+}
+buildTable();
+function showStep(i){
+  document.querySelectorAll('.step-panel').forEach((p,j)=>p.classList.toggle('visible',j===i));
+  document.querySelectorAll('.step-btn').forEach((b,j)=>b.classList.toggle('active',j===i));
+}
+</script>
+</body>
+</html>

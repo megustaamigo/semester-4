@@ -147,31 +147,19 @@ Valid course tags:
 
 `numerik/repos/numerik/` is a local-only repo. Work is organized by sheet in `blattXX/` directories with `aufgabeN.py` files and a `main.py` runner. A `.venv/` with `numpy` is used there.
 
-## HTML Artifact Workflow (Numerik)
+## Numerik HTML Artifacts
 
-When the user links an HTML file and indicates it is **for numerik**, this workflow is pre-authorized — do not ask for confirmation:
+Interactive HTML exam-prep artifacts (step-tabbed visualizations of LU, Jacobi, Gauß-Seidel, etc.) live in `numerik/artifacts/` and are registered in `numerik/exam_artifacts.md`.
 
-1. **Move** the file to `numerik/artifacts/` (create if missing). Use `mv`, not copy.
+**Create new artifacts via the `/numerik-artifact` skill** (`~/.claude/skills/numerik-artifact/SKILL.md`). The skill is the single source of truth. It asks the caller (1) which Numerik method and (2) for example numbers, then writes a complete standalone HTML file directly into the vault — KaTeX-rendered LaTeX formulas, color-traced calculations via `\cblue{...}` / `\cteal{...}` macros, step-tabbed matrix/vector visualizations, per-row symbol legends (one row per symbol, never inline) — and appends the iframe entry to `exam_artifacts.md`.
 
-2. **Sanitize** the HTML. Claude-generated artifacts are usually fragments (`<style>` + `<div>` only) and depend on Claude.ai CSS variables (`--font-sans`, `--color-text-primary`, `--color-background-secondary`, `--border-radius-md`, etc.) that are undefined in a standalone browser. Wrap each fragment as a complete document:
-   - Add `<!DOCTYPE html>`, `<html lang="de">`, `<head>` with charset + viewport meta tags and a title.
-   - Define the Claude.ai CSS variables in `:root { ... }` with a neutral zinc palette, plus a `@media (prefers-color-scheme: dark)` override.
-   - Add `body { font-family: var(--font-sans); padding: 1.5rem; max-width: 1100px; margin: 0 auto; }`.
-   - Move the original markup and `<script>` into the new `<body>` without altering interactive behavior.
-   - For multi-line content inside `.formula` blocks: replace `<br>` with literal newlines and add `white-space: pre-wrap` to `.formula`.
+Do **not** accept pre-generated HTML artifacts to "move and sanitize" — that workflow has been retired. If the user pastes an HTML file path and mentions Numerik, ask whether they want to rebuild it cleanly via `/numerik-artifact` from a method + example description, or keep the file outside the artifacts folder.
 
-3. **Register** in `numerik/exam_artifacts.md` (create with `course: numerik`, `type: resource`, current date, tags `numerik`/`exam`/`artifacts` if absent). Always **append** a new section per artifact:
+Canonical reference artifacts (read before producing new ones):
 
-   ```markdown
-   ## <Descriptive heading>
+- `numerik/artifacts/lu_zerlegung_3x3.html`
+- `numerik/artifacts/gauss_seidel_komplett.html`
+- `numerik/artifacts/jacobi_2x2_gleich_gauss_seidel.html`
 
-   <1–2 sentence German description.>
+Defer to the skill file for all structural / styling / color / KaTeX / legend rules — do not duplicate them here.
 
-   - **Open in browser:** [<filename>.html](file:///home/samuel/obsidian/semester-4/numerik/artifacts/<filename>.html)
-
-   <iframe src="file:///home/samuel/obsidian/semester-4/numerik/artifacts/<filename>.html" width="100%" height="650" style="border:1px solid var(--background-modifier-border); border-radius:8px; background:var(--background-primary);" sandbox="allow-scripts allow-same-origin"></iframe>
-   ```
-
-4. **Iframe rules:** always use the **absolute `file:///` path** (vault-relative paths do not resolve inside Obsidian's iframe sandbox because notes are served via `app://`); always include `sandbox="allow-scripts allow-same-origin"` so the artifact's JS keeps working; use Obsidian theme CSS variables for the iframe border so it matches the user's theme. Iframes render reliably in **Reading view**.
-
-5. **Do not** overwrite existing sections in `exam_artifacts.md`, do not strip `<script>` blocks from the fragment, and do not require user confirmation.
