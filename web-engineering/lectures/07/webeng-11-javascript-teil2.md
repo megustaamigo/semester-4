@@ -23,7 +23,7 @@ source: 11-JavaScript-Teil2.pdf
 # 11 — JavaScript Teil 2
 
 **Folien:** [[web-engineering/resources/11-JavaScript-Teil2.pdf|11-JavaScript-Teil2.pdf]]
-**Lernziele:** [[web-engineering/lernziele/webeng-lernziele-11|Lernziele Vorlesung 11]]
+**Lernziele:** [[web-engineering/lernziele/webeng-lernziele-javascript-teil2|Lernziele JavaScript Teil 2]]
 
 ## Inhaltsverzeichnis
 
@@ -794,7 +794,7 @@ flowchart LR
 
 ## Bezug zu Lernzielen
 
-Die kompakten Karteikarten finden sich unter [[web-engineering/lernziele/webeng-lernziele-11|Lernziele Vorlesung 11]]. Im Folgenden ausfuehrliche Antworten zur Pruefungsvorbereitung.
+Die kompakten Karteikarten finden sich unter [[web-engineering/lernziele/webeng-lernziele-javascript-teil2|Lernziele JavaScript Teil 2]]. Im Folgenden ausfuehrliche Antworten zur Pruefungsvorbereitung.
 
 **Was ist Asynchronitaet in JavaScript und warum gibt es sie?**
 

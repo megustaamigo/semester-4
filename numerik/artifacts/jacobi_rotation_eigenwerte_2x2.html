@@ -231,11 +231,11 @@ body { font-family: var(--font-sans); padding: 1.5rem; max-width: 1100px; margin
     <p class="step-title">Eigenwerte ablesen</p>
     <p class="step-desc">Die Eigenwerte stehen auf der Diagonale von $A^{(1)}$:</p>
     <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:1rem 0">
-      <span class="eig-badge" style="background:#F7C1C1;color:#791F1F">λ₁ = +5</span>
-      <span class="eig-badge" style="background:#F7C1C1;color:#791F1F">λ₂ = −5</span>
+      <span class="eig-badge" style="background:#9FE1CB;color:#085041">λ₁ = +5</span>
+      <span class="eig-badge" style="background:#C0DD97;color:#27500A">λ₂ = −5</span>
     </div>
     <p class="step-desc">Gegenprobe über das charakteristische Polynom:</p>
-    <p>$$ \det(A - \lambda I) = (3-\lambda)(-3-\lambda) - 4\cdot4 = \lambda^2 - 25 \stackrel{!}{=} 0 \;\Rightarrow\; \lambda_{1,2} = \cred{\pm 5} \quad✓ $$</p>
+    <p>$$ \det(A - \lambda I) = (3-\lambda)(-3-\lambda) - 4\cdot4 = \lambda^2 - 25 \stackrel{!}{=} 0 \;\Rightarrow\; \lambda_1 = \cteal{+5},\ \lambda_2 = \cgreen{-5} \quad✓ $$</p>
   </div>
   <div class="card">
     <p class="step-title">Eigenvektoren = Spalten von Q</p>
@@ -257,8 +257,8 @@ body { font-family: var(--font-sans); padding: 1.5rem; max-width: 1100px; margin
       </div>
     </div>
     <p class="step-desc">Verifikation $A\,v = \lambda\,v$:</p>
-    <p>$$ A\,v_1 = \begin{pmatrix} 3 & 4 \\ 4 & -3 \end{pmatrix}\tfrac{1}{\sqrt5}\begin{pmatrix} 2 \\ 1 \end{pmatrix} = \tfrac{1}{\sqrt5}\begin{pmatrix} 10 \\ 5 \end{pmatrix} = \cred{5}\cdot\tfrac{1}{\sqrt5}\begin{pmatrix} 2 \\ 1 \end{pmatrix} = \cred{5}\,v_1 \quad✓ $$</p>
-    <p>$$ A\,v_2 = \begin{pmatrix} 3 & 4 \\ 4 & -3 \end{pmatrix}\tfrac{1}{\sqrt5}\begin{pmatrix} -1 \\ 2 \end{pmatrix} = \tfrac{1}{\sqrt5}\begin{pmatrix} 5 \\ -10 \end{pmatrix} = \cred{-5}\cdot\tfrac{1}{\sqrt5}\begin{pmatrix} -1 \\ 2 \end{pmatrix} = \cred{-5}\,v_2 \quad✓ $$</p>
+    <p>$$ A\,v_1 = \begin{pmatrix} 3 & 4 \\ 4 & -3 \end{pmatrix}\tfrac{1}{\sqrt5}\begin{pmatrix} 2 \\ 1 \end{pmatrix} = \tfrac{1}{\sqrt5}\begin{pmatrix} 10 \\ 5 \end{pmatrix} = \cteal{5}\cdot\tfrac{1}{\sqrt5}\begin{pmatrix} 2 \\ 1 \end{pmatrix} = \cteal{5}\,v_1 \quad✓ $$</p>
+    <p>$$ A\,v_2 = \begin{pmatrix} 3 & 4 \\ 4 & -3 \end{pmatrix}\tfrac{1}{\sqrt5}\begin{pmatrix} -1 \\ 2 \end{pmatrix} = \tfrac{1}{\sqrt5}\begin{pmatrix} 5 \\ -10 \end{pmatrix} = \cgreen{-5}\cdot\tfrac{1}{\sqrt5}\begin{pmatrix} -1 \\ 2 \end{pmatrix} = \cgreen{-5}\,v_2 \quad✓ $$</p>
     <p class="step-desc" style="margin-top:8px">Die Eigenvektoren stehen senkrecht aufeinander ($v_1 \cdot v_2 = 0$) — typisch für symmetrische Matrizen. Bei größeren Matrizen liefert <em>ein</em> Schritt keine Diagonalmatrix; man wiederholt die Rotation über wechselnde Pivots (Sweeps), bis alle Außerdiagonalelemente klein genug sind, und akkumuliert die $Q$ zur Eigenvektormatrix.</p>
   </div>
 </div>

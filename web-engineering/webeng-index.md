@@ -17,10 +17,12 @@ tags: [web-engineering, index]
 - [[web-engineering/lernziele/webeng-lernziele-06|Lernziele Vorlesung 6]]
 - [[web-engineering/lernziele/webeng-lernziele-07|Lernziele Vorlesung 7]]
 - [[web-engineering/lernziele/webeng-lernziele-08|Lernziele Vorlesung 8]]
-- [[web-engineering/lernziele/webeng-lernziele-09|Lernziele Vorlesung 9]]
-- [[web-engineering/lernziele/webeng-lernziele-10|Lernziele Vorlesung 10]]
-- [[web-engineering/lernziele/webeng-lernziele-11|Lernziele Vorlesung 11]]
-- [[web-engineering/lernziele/webeng-lernziele-12|Lernziele Vorlesung 12]]
+- [[web-engineering/lernziele/webeng-lernziele-09|Lernziele Vorlesung 9 — Webserver]]
+- [[web-engineering/lernziele/webeng-lernziele-10|Lernziele Vorlesung 10 — Java (Servlets & JSP)]]
+- [[web-engineering/lernziele/webeng-lernziele-11|Lernziele Vorlesung 11 — TLS, PKI & Authentifizierung]]
+- [[web-engineering/lernziele/webeng-lernziele-12|Lernziele Vorlesung 12 — OWASP & Web-Sicherheit]]
+- [[web-engineering/lernziele/webeng-lernziele-nodejs-teil2|Lernziele Node.js Teil 2]] (Zusatz zu Deck 10)
+- [[web-engineering/lernziele/webeng-lernziele-javascript-teil2|Lernziele JavaScript Teil 2]] (Zusatz zu Deck 11)
 
 ## Lectures
 
@@ -53,6 +55,12 @@ tags: [web-engineering, index]
 - [[web-engineering/lectures/08/webeng-12-javascript-fetch|12 — JavaScript Fetch (AJAX, DOM, Fetch)]]
 - [[web-engineering/lectures/08/webeng-13-restful-services|13 — RESTful Services]]
 
+### Vorlesung 9 — Webserver
+- [[web-engineering/lectures/09/webeng-14-server|14 — Webserver (Apache, nginx, Node.js)]]
+
+### Vorlesung 10 — Java (Servlets & JSP)
+- [[web-engineering/lectures/10/webeng-15-java|15 — Java: Servlets & Java Server Pages]]
+
 ## Exercises
 
 - [[web-engineering/exercises/webeng-exercise-01-html-css|Exercise 1 — HTML & CSS Landingpage]]
@@ -72,3 +80,5 @@ tags: [web-engineering, index]
 - [[web-engineering/resources/11-JavaScript-Teil2.pdf|11-JavaScript-Teil2.pdf]]
 - [[web-engineering/resources/12-JavaScript-Fetch.pdf|12-JavaScript-Fetch.pdf]]
 - [[web-engineering/resources/13-JavaScript-Rest.pdf|13-JavaScript-Rest.pdf]]
+- [[web-engineering/resources/14-Server.pdf|14-Server.pdf]]
+- [[web-engineering/resources/15-Java.pdf|15-Java.pdf]]

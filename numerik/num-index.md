@@ -37,6 +37,18 @@ tags: [numerik, index]
 - [[numerik/exercises/07/num-exercise-07|Uebung 7 — Aufgaben]]
 - [[numerik/exercises/07/num-solution-07|Uebung 7 — Loesungen]]
 
+### Blatt 8
+- [[numerik/exercises/08/num-exercise-08|Uebung 8 — Aufgaben]]
+- [[numerik/exercises/08/num-solution-08|Uebung 8 — Loesungen]]
+
+### Blatt 9
+- [[numerik/exercises/09/num-exercise-09|Uebung 9 — Aufgaben]]
+- [[numerik/exercises/09/num-solution-09|Uebung 9 — Loesungen]]
+
+### Blatt 10
+- [[numerik/exercises/10/num-exercise-10|Uebung 10 — Aufgaben]]
+- [[numerik/exercises/10/num-solution-10|Uebung 10 — Loesungen]]
+
 ## Exam Prep
 
 - [[numerik/num-exam-concepts|Exam Concepts — LU, Pivotsuche, Cholesky]]
@@ -50,6 +62,9 @@ tags: [numerik, index]
 - [[numerik/resources/NumI-05.pdf|NumI-05.pdf]]
 - [[numerik/resources/NumI-06.pdf|NumI-06.pdf]]
 - [[numerik/resources/NumI-07.pdf|NumI-07.pdf]]
+- [[numerik/resources/NumI-08.pdf|NumI-08.pdf]]
+- [[numerik/resources/NumI-09.pdf|NumI-09.pdf]]
+- [[numerik/resources/NumI-10.pdf|NumI-10.pdf]]
 
 ## Praktikum (Python)
 
@@ -61,4 +76,7 @@ Local repo: `numerik/repos/numerik/` (Python + numpy + scipy + matplotlib, venv 
 - `blatt05/` — Blatt 5 (Nachiteration fuer LU mit Spalten-Pivot)
 - `blatt06/` — Blatt 6 (CG-Verfahren auf Membran-System)
 - `blatt07/` — Blatt 7 (Jacobi-Eigenwertverfahren)
+- `blatt08/` — Blatt 8 (Newton- und Sekanten-Verfahren, nichtlineares System)
+- `blatt09/` — Blatt 9 (Newton-Interpolation, Horner-Schema, Runge-Phaenomen)
+- `blatt10/` — Blatt 10 (Lineare Ausgleichsrechnung, Pseudoinverse & TSVD-Regularisierung)
 - `membran_lib.py` — Hilfsbibliothek (Ablock, system, ew_exakt, plotxk, plotev, animev)

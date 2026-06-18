@@ -17,7 +17,9 @@
           macros: {
             '\\cblue':   '\\htmlClass{c-blue}{#1}',
             '\\cteal':   '\\htmlClass{c-teal}{#1}',
-            '\\camber':  '\\htmlClass{c-amber}{#1}'
+            '\\camber':  '\\htmlClass{c-amber}{#1}',
+            '\\ccoral':  '\\htmlClass{c-coral}{#1}',
+            '\\cgreen':  '\\htmlClass{c-green}{#1}'
           }
         });"></script>
 <style>
@@ -42,10 +44,14 @@
     --hl-blue:   #0C447C;
     --hl-teal:   #085041;
     --hl-amber:  #633806;
+    --hl-coral:  #712B13;
+    --hl-green:  #27500A;
   }
   .c-blue  { color: var(--hl-blue);  font-weight: 600 }
   .c-teal  { color: var(--hl-teal);  font-weight: 600 }
   .c-amber { color: var(--hl-amber); font-weight: 600 }
+  .c-coral { color: var(--hl-coral); font-weight: 600 }
+  .c-green { color: var(--hl-green); font-weight: 600 }
   @media (prefers-color-scheme: dark) {
     :root {
       --color-background-primary: #1a1a1a;
@@ -56,6 +62,8 @@
       --hl-blue:   #B5D4F4;
       --hl-teal:   #9FE1CB;
       --hl-amber:  #FAC775;
+      --hl-coral:  #F5C4B3;
+      --hl-green:  #C0DD97;
       --color-border-primary: #52525b;
       --color-border-secondary: #3f3f46;
       --color-border-tertiary: #27272a;
@@ -79,6 +87,8 @@
   .cell.hi-blue { background: #B5D4F4; color: #0C447C; font-weight: 500; }
   .cell.hi-teal { background: #9FE1CB; color: #085041; font-weight: 500; }
   .cell.hi-amber { background: #FAC775; color: #633806; font-weight: 500; }
+  .cell.hi-coral { background: #F5C4B3; color: #712B13; font-weight: 500; }
+  .cell.hi-green { background: #C0DD97; color: #27500A; font-weight: 500; }
   .cell.zero { color: var(--color-text-tertiary); }
   .op-row { display: flex; align-items: center; gap: 12px; justify-content: center; flex-wrap: wrap; }
   .op-sign { font-size: 22px; color: var(--color-text-secondary); }
@@ -93,6 +103,8 @@
     .cell.hi-blue { background: #0C447C; color: #B5D4F4; }
     .cell.hi-teal { background: #085041; color: #9FE1CB; }
     .cell.hi-amber { background: #633806; color: #FAC775; }
+    .cell.hi-coral { background: #712B13; color: #F5C4B3; }
+    .cell.hi-green { background: #27500A; color: #C0DD97; }
   }
 </style>
 </head>
@@ -104,6 +116,7 @@
     <button class="step-btn" onclick="showStep(2)">2 · Schritt 2</button>
     <button class="step-btn" onclick="showStep(3)">3 · Schritt 3</button>
     <button class="step-btn" onclick="showStep(4)">4 · Ergebnis L·U</button>
+    <button class="step-btn" onclick="showStep(5)">5 · A·x = b lösen</button>
   </div>
 
   <!-- Step 0 -->
@@ -223,15 +236,15 @@
           <div class="mat-label">L</div>
           <div class="mat-bracket"><span class="brace-left">[</span>
           <div class="mat-inner" style="grid-template-columns: repeat(3,44px);">
-            <div class="cell hi-teal">1</div><div class="cell zero">0</div><div class="cell zero">0</div>
-            <div class="cell hi-amber">2</div><div class="cell hi-teal">1</div><div class="cell zero">0</div>
-            <div class="cell hi-amber">4</div><div class="cell hi-amber">3</div><div class="cell hi-teal">1</div>
+            <div class="cell hi-amber">1</div><div class="cell zero">0</div><div class="cell zero">0</div>
+            <div class="cell hi-teal">2</div><div class="cell hi-amber">1</div><div class="cell zero">0</div>
+            <div class="cell hi-teal">4</div><div class="cell hi-teal">3</div><div class="cell hi-amber">1</div>
           </div><span class="brace-right">]</span></div>
         </div>
       </div>
       <div class="highlight-note">
-        <span><span class="dot" style="background:#9FE1CB;"></span>Diagonale (immer 1)</span>
-        <span><span class="dot" style="background:#FAC775;"></span>Multiplikatoren m</span>
+        <span><span class="dot" style="background:#FAC775;"></span>Diagonale (immer 1)</span>
+        <span><span class="dot" style="background:#9FE1CB;"></span>Multiplikatoren m (aus Schritt 1 &amp; 2)</span>
       </div>
     </div>
   </div>
@@ -273,7 +286,72 @@
         </div>
       </div>
       <div style="margin-top:1rem; font-size:13px; color:var(--color-text-secondary); line-height:1.6;">
-        Die Zerlegung ist vollständig. L und U können nun verwendet werden, um Gleichungssysteme A·x = b effizient zu lösen (Vorwärts- und Rückwärtssubstitution).
+        Die Zerlegung ist vollständig. Wozu das gut ist, zeigt Schritt 5: Gleichungssysteme A·x = b lassen sich jetzt ohne erneute Elimination lösen (Vorwärts- und Rückwärtssubstitution).
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 5 -->
+  <div class="step-panel" id="p5">
+    <div class="card">
+      <p class="step-title">Schritt 5 — Anwendung: A·x = b lösen</p>
+      <p class="step-desc">Mit $A = \cteal{L}\cdot\cblue{U}$ zerfällt $A\,x = \camber{b}$ in <strong>zwei Dreieckssysteme</strong>, die man nur noch einsetzen muss:</p>
+      <p>$$ \cteal{L}\,\ccoral{y} = \camber{b} \quad\text{(Vorwärtssubstitution, von oben nach unten)} \qquad \cblue{U}\,\cgreen{x} = \ccoral{y} \quad\text{(Rückwärtssubstitution, von unten nach oben)} $$</p>
+      <dl class="legend">
+        <dt>$\camber{b}$</dt><dd>rechte Seite des Gleichungssystems — hier Beispiel $\camber{b} = (4,\,10,\,24)^\top$</dd>
+        <dt>$\ccoral{y}$</dt><dd>Hilfsvektor: Lösung des unteren Dreieckssystems $\cteal{L}\,\ccoral{y} = \camber{b}$</dd>
+        <dt>$\cgreen{x}$</dt><dd>gesuchte Lösung: ergibt sich aus dem oberen Dreieckssystem $\cblue{U}\,\cgreen{x} = \ccoral{y}$</dd>
+      </dl>
+    </div>
+    <div class="card">
+      <p class="step-title">Vorwärtssubstitution: L·y = b</p>
+      <p class="step-desc">Da L unten-dreieckig mit Einsen auf der Diagonale ist, liefert jede Zeile direkt eine Komponente — Zeile 1 zuerst:</p>
+      <p>$$ \ccoral{y_1} = \camber{4} $$</p>
+      <p>$$ \ccoral{y_2} = \camber{10} - \cteal{2}\cdot\ccoral{y_1} = \camber{10} - \cteal{2}\cdot\ccoral{4} = \ccoral{2} $$</p>
+      <p>$$ \ccoral{y_3} = \camber{24} - \cteal{4}\cdot\ccoral{y_1} - \cteal{3}\cdot\ccoral{y_2} = \camber{24} - \cteal{4}\cdot\ccoral{4} - \cteal{3}\cdot\ccoral{2} = \ccoral{2} $$</p>
+      <div class="op-row" style="margin-top:1rem;">
+        <div class="mat-wrap">
+          <div class="mat-label">b</div>
+          <div class="mat-bracket"><span class="brace-left">[</span>
+          <div class="mat-inner" style="grid-template-columns: 44px;">
+            <div class="cell hi-amber">4</div><div class="cell hi-amber">10</div><div class="cell hi-amber">24</div>
+          </div><span class="brace-right">]</span></div>
+        </div>
+        <div class="op-sign">→</div>
+        <div class="mat-wrap">
+          <div class="mat-label">y</div>
+          <div class="mat-bracket"><span class="brace-left">[</span>
+          <div class="mat-inner" style="grid-template-columns: 44px;">
+            <div class="cell hi-coral">4</div><div class="cell hi-coral">2</div><div class="cell hi-coral">2</div>
+          </div><span class="brace-right">]</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <p class="step-title">Rückwärtssubstitution: U·x = y</p>
+      <p class="step-desc">U ist oben-dreieckig — jetzt von der letzten Zeile nach oben arbeiten und durch die Diagonaleinträge von U teilen:</p>
+      <p>$$ \cgreen{x_3} = \frac{\ccoral{y_3}}{\cblue{u_{33}}} = \frac{\ccoral{2}}{\cblue{2}} = \cgreen{1} $$</p>
+      <p>$$ \cgreen{x_2} = \frac{\ccoral{y_2} - \cblue{1}\cdot\cgreen{x_3}}{\cblue{u_{22}}} = \frac{\ccoral{2} - \cblue{1}\cdot\cgreen{1}}{\cblue{1}} = \cgreen{1} $$</p>
+      <p>$$ \cgreen{x_1} = \frac{\ccoral{y_1} - \cblue{1}\cdot\cgreen{x_2} - \cblue{1}\cdot\cgreen{x_3}}{\cblue{u_{11}}} = \frac{\ccoral{4} - \cblue{1}\cdot\cgreen{1} - \cblue{1}\cdot\cgreen{1}}{\cblue{2}} = \cgreen{1} $$</p>
+      <div class="op-row" style="margin-top:1rem;">
+        <div class="mat-wrap">
+          <div class="mat-label">y</div>
+          <div class="mat-bracket"><span class="brace-left">[</span>
+          <div class="mat-inner" style="grid-template-columns: 44px;">
+            <div class="cell hi-coral">4</div><div class="cell hi-coral">2</div><div class="cell hi-coral">2</div>
+          </div><span class="brace-right">]</span></div>
+        </div>
+        <div class="op-sign">→</div>
+        <div class="mat-wrap">
+          <div class="mat-label">x (Lösung)</div>
+          <div class="mat-bracket"><span class="brace-left">[</span>
+          <div class="mat-inner" style="grid-template-columns: 44px;">
+            <div class="cell hi-green">1</div><div class="cell hi-green">1</div><div class="cell hi-green">1</div>
+          </div><span class="brace-right">]</span></div>
+        </div>
+      </div>
+      <div style="margin-top:1rem; font-size:13px; color:var(--color-text-secondary); line-height:1.6;">
+        Probe: A·(1, 1, 1)ᵀ = (2+1+1, 4+3+3, 8+7+9)ᵀ = (4, 10, 24)ᵀ = b ✓ &nbsp;—&nbsp; Der Aufwand pro rechter Seite ist nur noch O(n²); die teure Zerlegung O(n³) fällt einmalig an. Genau deshalb lohnt sich LU bei mehreren rechten Seiten.
       </div>
     </div>
   </div>

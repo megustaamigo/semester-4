@@ -134,7 +134,7 @@ body { font-family: var(--font-sans); padding: 1.5rem; max-width: 1100px; margin
       <dt>$p$</dt><dd>Konvergenzordnung des Verfahrens</dd>
       <dt>$m$</dt><dd>Vielfachheit der Nullstelle</dd>
     </dl>
-    <p class="step-desc" style="margin-top:8px">Zwei Leitsätze für später: (1) $\Phi$ ist <strong>Kontraktion</strong> auf $[a,b]$, wenn $\Phi$ das Intervall in sich abbildet und $|\Phi'| \le a < 1$ dort gilt. (2) Die <strong>Ordnung</strong> ergibt sich aus den Ableitungen am Fixpunkt: ist $\Phi'(x^*)=0$, aber $\Phi''(x^*)\neq 0$, so konvergiert das Verfahren <em>quadratisch</em> ($p=2$).</p>
+    <p class="step-desc" style="margin-top:8px">Zwei Leitsätze für später: (1) $\Phi$ ist <strong>Kontraktion</strong> auf einem Intervall $I$, wenn $\Phi$ das Intervall in sich abbildet ($\Phi(I) \subseteq I$) und dort $|\Phi'| \le a < 1$ gilt. (2) Die <strong>Ordnung</strong> ergibt sich aus den Ableitungen am Fixpunkt: ist $\Phi'(x^*)=0$, aber $\Phi''(x^*)\neq 0$, so konvergiert das Verfahren <em>quadratisch</em> ($p=2$).</p>
   </div>
 </div>
 
@@ -179,10 +179,10 @@ body { font-family: var(--font-sans); padding: 1.5rem; max-width: 1100px; margin
   <div class="card">
     <p class="step-title">Kontraktionszahl a</p>
     <p class="step-desc">Auf $[\tfrac32,2]$ ist $x^2 \in [2{,}25,\,4]$, also $\ccoral{|\Phi'(x)|} = \dfrac{|3 - x^2|}{2}$ am größten dort, wo $x^2$ maximal ist — am rechten Rand $x=2$:</p>
-    <p>$$ \cred{a} \;=\; \max_{x\in[3/2,\,2]} \ccoral{|\Phi'(x)|} \;=\; \ccoral{|\Phi'(2)|} \;=\; \frac{|3 - 4|}{2} \;=\; \cred{\tfrac{1}{2}} \;\le\; \tfrac{1}{2} \;<\; 1 $$</p>
-    <p class="step-desc">Da $\Phi$ das Intervall in sich abbildet <em>und</em> $\cred{a} = \tfrac12 < 1$, ist $\Phi$ nach dem Banachschen Fixpunktsatz eine Kontraktion mit eindeutigem Fixpunkt $\cgreen{x^*=\sqrt3}$. ✓</p>
+    <p>$$ \cred{a} \;=\; \max_{x\in[3/2,\,2]} \ccoral{|\Phi'(x)|} \;=\; \ccoral{|\Phi'(2)|} \;=\; \frac{|3 - 4|}{2} \;=\; \cred{\tfrac{1}{2}} \;<\; 1 $$</p>
+    <p class="step-desc">Da $\Phi$ das Intervall in sich abbildet <em>und</em> $\cred{a} = \tfrac12 < 1$ gilt, ist $\Phi$ eine Kontraktion — der Banachsche Fixpunktsatz garantiert dann genau einen Fixpunkt in $[\tfrac32,2]$, nämlich $\cgreen{x^*=\sqrt3}$. ✓</p>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
-      <span class="res-badge" style="background:#F7C1C1;color:#791F1F">Kontraktionszahl a = 1/2 ≤ 1/2</span>
+      <span class="res-badge" style="background:#F7C1C1;color:#791F1F">Kontraktionszahl a = 1/2 &lt; 1</span>
     </div>
   </div>
 </div>
@@ -208,8 +208,8 @@ body { font-family: var(--font-sans); padding: 1.5rem; max-width: 1100px; margin
         <tr><td>0</td><td>2.00000000</td><td>2.7 · 10⁻¹</td></tr>
         <tr><td>1</td><td>1.66666667</td><td>6.5 · 10⁻²</td></tr>
         <tr><td>2</td><td>1.72839506</td><td>3.7 · 10⁻³</td></tr>
-        <tr><td>3</td><td>1.73203820</td><td>1.3 · 10⁻⁵</td></tr>
-        <tr><td>4</td><td>1.73205081</td><td>1.4 · 10⁻¹⁰</td></tr>
+        <tr><td>3</td><td>1.73203924</td><td>1.2 · 10⁻⁵</td></tr>
+        <tr><td>4</td><td>1.73205081</td><td>1.2 · 10⁻¹⁰</td></tr>
       </tbody>
     </table>
     <p class="step-desc" style="margin-top:8px">Fehler-Exponenten ≈ −1, −2, −3, −5, −10: jeder Schritt etwa verdoppelt die Genauigkeit → typisch quadratisch.</p>

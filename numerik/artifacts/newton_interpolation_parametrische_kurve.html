@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Newton-Interpolation — parametrische Kurve (dividierte Differenzen)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ],
+          trust: true,
+          strict: 'ignore',
+          macros: {
+            '\\cblue':   '\\htmlClass{c-blue}{#1}',
+            '\\cteal':   '\\htmlClass{c-teal}{#1}',
+            '\\camber':  '\\htmlClass{c-amber}{#1}',
+            '\\ccoral':  '\\htmlClass{c-coral}{#1}',
+            '\\cpurple': '\\htmlClass{c-purple}{#1}',
+            '\\cred':    '\\htmlClass{c-red}{#1}',
+            '\\cgreen':  '\\htmlClass{c-green}{#1}'
+          }
+        });"></script>
+<style>
+:root {
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #f4f4f5;
+  --color-text-primary: #18181b;
+  --color-text-secondary: #52525b;
+  --color-text-tertiary: #a1a1aa;
+  --color-border-primary: #d4d4d8;
+  --color-border-secondary: #e4e4e7;
+  --color-border-tertiary: #f4f4f5;
+  --border-radius-md: 6px;
+  --border-radius-lg: 10px;
+  --hl-blue:   #0C447C;
+  --hl-teal:   #085041;
+  --hl-amber:  #633806;
+  --hl-coral:  #712B13;
+  --hl-purple: #3C3489;
+  --hl-red:    #791F1F;
+  --hl-green:  #27500A;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background-primary: #1a1a1a;
+    --color-background-secondary: #2a2a2a;
+    --color-text-primary: #f4f4f5;
+    --color-text-secondary: #a1a1aa;
+    --color-text-tertiary: #71717a;
+    --color-border-primary: #52525b;
+    --color-border-secondary: #3f3f46;
+    --color-border-tertiary: #27272a;
+    --hl-blue:   #B5D4F4;
+    --hl-teal:   #9FE1CB;
+    --hl-amber:  #FAC775;
+    --hl-coral:  #F5C4B3;
+    --hl-purple: #CECBF6;
+    --hl-red:    #F7C1C1;
+    --hl-green:  #C0DD97;
+  }
+  body { background: #18181b; color: #f4f4f5; }
+}
+body { font-family: var(--font-sans); padding: 1.5rem; max-width: 1100px; margin: 0 auto; }
+
+.c-blue   { color: var(--hl-blue);   font-weight: 600 }
+.c-teal   { color: var(--hl-teal);   font-weight: 600 }
+.c-amber  { color: var(--hl-amber);  font-weight: 600 }
+.c-coral  { color: var(--hl-coral);  font-weight: 600 }
+.c-purple { color: var(--hl-purple); font-weight: 600 }
+.c-red    { color: var(--hl-red);    font-weight: 600 }
+.c-green  { color: var(--hl-green);  font-weight: 600 }
+
+.legend{font-size:13px;color:var(--color-text-secondary);line-height:1.7;background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 16px;margin:10px 0;display:grid;grid-template-columns:max-content 1fr;column-gap:14px;row-gap:6px;align-items:baseline}
+.legend dt{font-family:var(--font-mono);color:var(--color-text-primary);font-weight:500;margin:0}
+.legend dd{margin:0}
+.katex{font-size:0.85em}
+.katex-display{margin:0.5em 0}
+
+.step-nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.5rem}
+.step-btn{padding:6px 14px;font-size:13px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);cursor:pointer}
+.step-btn.active{background:var(--color-background-secondary);color:var(--color-text-primary);border-color:var(--color-border-primary);font-weight:500}
+.step-panel{display:none}
+.step-panel.visible{display:block}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:1rem}
+.step-title{font-size:16px;font-weight:500;color:var(--color-text-primary);margin:0 0 8px}
+.step-desc{font-size:14px;color:var(--color-text-secondary);line-height:1.6;margin:0 0 8px}
+
+.mat-wrap{display:flex;flex-direction:column;align-items:center}
+.mat-label{font-size:13px;color:var(--color-text-secondary);margin-bottom:4px}
+.mat-bracket{display:flex;align-items:center}
+.brace{font-size:48px;font-weight:200;color:var(--color-text-secondary);line-height:1}
+.mat-inner{display:grid;gap:2px;padding:4px 8px}
+.cell{width:52px;height:36px;display:flex;align-items:center;justify-content:center;font-size:14px;border-radius:4px;background:var(--color-background-secondary);color:var(--color-text-primary)}
+.cell.hi-blue   {background:#B5D4F4;color:#0C447C;font-weight:500}
+.cell.hi-teal   {background:#9FE1CB;color:#085041;font-weight:500}
+.cell.hi-amber  {background:#FAC775;color:#633806;font-weight:500}
+.cell.hi-coral  {background:#F5C4B3;color:#712B13;font-weight:500}
+.cell.hi-purple {background:#CECBF6;color:#3C3489;font-weight:500}
+.cell.hi-red    {background:#F7C1C1;color:#791F1F;font-weight:500}
+.cell.hi-green  {background:#C0DD97;color:#27500A;font-weight:500}
+.cell.zero{color:var(--color-text-tertiary)}
+@media(prefers-color-scheme:dark){
+  .cell.hi-blue  {background:#0C447C;color:#B5D4F4}
+  .cell.hi-teal  {background:#085041;color:#9FE1CB}
+  .cell.hi-amber {background:#633806;color:#FAC775}
+  .cell.hi-coral {background:#712B13;color:#F5C4B3}
+  .cell.hi-purple{background:#3C3489;color:#CECBF6}
+  .cell.hi-red   {background:#791F1F;color:#F7C1C1}
+  .cell.hi-green {background:#27500A;color:#C0DD97}
+}
+.op-row{display:flex;align-items:center;gap:12px;justify-content:center;flex-wrap:wrap}
+.eq{font-size:22px;color:var(--color-text-secondary)}
+
+/* Dividierte-Differenzen-Dreieck */
+.dd-grid{display:grid;gap:4px 18px;justify-content:center;padding:8px;align-items:center}
+.dd-head{font-size:12px;color:var(--color-text-secondary);text-align:center;font-family:var(--font-mono)}
+.dd-cell{width:64px;height:34px;display:flex;align-items:center;justify-content:center;font-size:14px;border-radius:4px;background:var(--color-background-secondary);color:var(--color-text-primary);font-family:var(--font-mono)}
+.dd-cell.hi-blue  {background:#B5D4F4;color:#0C447C;font-weight:500}
+.dd-cell.hi-teal  {background:#9FE1CB;color:#085041;font-weight:500}
+.dd-cell.hi-amber {background:#FAC775;color:#633806;font-weight:500}
+.dd-cell.hi-coral {background:#F5C4B3;color:#712B13;font-weight:500}
+.dd-cell.hi-purple{background:#CECBF6;color:#3C3489;font-weight:500}
+.dd-cell.hi-green {background:#C0DD97;color:#27500A;font-weight:500}
+.dd-cell.top{outline:2px solid var(--hl-red);outline-offset:1px}
+@media(prefers-color-scheme:dark){
+  .dd-cell.hi-blue  {background:#0C447C;color:#B5D4F4}
+  .dd-cell.hi-teal  {background:#085041;color:#9FE1CB}
+  .dd-cell.hi-amber {background:#633806;color:#FAC775}
+  .dd-cell.hi-coral {background:#712B13;color:#F5C4B3}
+  .dd-cell.hi-purple{background:#3C3489;color:#CECBF6}
+  .dd-cell.hi-green {background:#27500A;color:#C0DD97}
+}
+.dd-note{font-size:12px;color:var(--color-text-secondary);text-align:center;margin-top:6px}
+
+.conv-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+.conv-table th{text-align:left;padding:6px 8px;color:var(--color-text-secondary);font-weight:500;border-bottom:0.5px solid var(--color-border-tertiary)}
+.conv-table td{padding:5px 8px;color:var(--color-text-primary);border-bottom:0.5px solid var(--color-border-tertiary);font-family:var(--font-mono);font-size:13px}
+.conv-table tr:last-child td{border-bottom:none}
+
+#curveplot{display:block;margin:0 auto;max-width:520px;width:100%}
+#curveplot .axis{stroke:var(--color-text-tertiary);stroke-width:1}
+#curveplot .gridline{stroke:var(--color-border-secondary);stroke-width:0.5}
+#curveplot .curve{stroke:var(--hl-purple);stroke-width:2.5;fill:none}
+#curveplot .pt{fill:var(--hl-red)}
+#curveplot text{font-family:var(--font-mono);font-size:11px;fill:var(--color-text-secondary)}
+</style>
+</head>
+<body>
+
+<div class="step-nav">
+  <button class="step-btn active" onclick="showStep(0)">0 · Aufgabe &amp; Verfahren</button>
+  <button class="step-btn" onclick="showStep(1)">1 · Differenzen für x(t)</button>
+  <button class="step-btn" onclick="showStep(2)">2 · Polynom p_x(t)</button>
+  <button class="step-btn" onclick="showStep(3)">3 · Differenzen für y(t)</button>
+  <button class="step-btn" onclick="showStep(4)">4 · Polynom p_y(t)</button>
+  <button class="step-btn" onclick="showStep(5)">5 · Kurve &amp; Probe</button>
+</div>
+
+<!-- Step 0 -->
+<div class="step-panel visible" id="p0">
+  <div class="card">
+    <p class="step-title">Aufgabe — Kurve durch Punkte in der Ebene</p>
+    <p class="step-desc">Gesucht ist eine glatte Kurve durch die vier Punkte $z_0,\ldots,z_3$ in der Ebene, parametrisiert über $t_i = 0, 1, 2, 3$. Da die Punkte <em>keine</em> Funktion $y(x)$ bilden (zu $x=1$ gehören zwei Punkte, zu $x=0$ auch!), interpoliert man <strong>parametrisch</strong>: beide Koordinaten getrennt als Funktionen von $t$.</p>
+    <div class="op-row" style="margin-top:1rem">
+      <div class="mat-wrap"><div class="mat-label">t (Parameter)</div>
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:repeat(4,52px)">
+          <div class="cell hi-blue">0</div><div class="cell hi-blue">1</div><div class="cell hi-blue">2</div><div class="cell hi-blue">3</div>
+        </div><span class="brace">]</span></div>
+      </div>
+      <div class="mat-wrap"><div class="mat-label">x-Koordinaten</div>
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:repeat(4,52px)">
+          <div class="cell hi-amber">0</div><div class="cell hi-amber">1</div><div class="cell hi-amber">1</div><div class="cell hi-amber">0</div>
+        </div><span class="brace">]</span></div>
+      </div>
+      <div class="mat-wrap"><div class="mat-label">y-Koordinaten</div>
+        <div class="mat-bracket"><span class="brace">[</span>
+        <div class="mat-inner" style="grid-template-columns:repeat(4,52px)">
+          <div class="cell hi-teal">0</div><div class="cell hi-teal">1</div><div class="cell hi-teal">0</div><div class="cell hi-teal">1</div>
+        </div><span class="brace">]</span></div>
+      </div>
+    </div>
+    <p class="step-desc" style="margin-top:10px;text-align:center">$z_0 = (0,0),\quad z_1 = (1,1),\quad z_2 = (1,0),\quad z_3 = (0,1)$ — also <strong>zwei</strong> Interpolationsaufgaben: $p_x(t_i) = x_i$ und $p_y(t_i) = y_i$.</p>
+  </div>
+  <div class="card">
+    <p class="step-title">Newton-Interpolation mit dividierten Differenzen</p>
+    <p class="step-desc">Das Interpolationspolynom durch $n+1$ Stützstellen in <strong>Newton-Form</strong>:</p>
+    <p>$$ p(t) \;=\; f[t_0] \;+\; f[t_0,t_1]\,(t-\cblue{t_0}) \;+\; f[t_0,t_1,t_2]\,(t-\cblue{t_0})(t-\cblue{t_1}) \;+\; \cdots \;+\; f[t_0,\ldots,t_n]\prod_{j=0}^{n-1}(t-\cblue{t_j}) $$</p>
+    <p class="step-desc">Die Koeffizienten sind die <strong>dividierten Differenzen</strong>, rekursiv definiert:</p>
+    <p>$$ f[t_i] = f_i, \qquad f[t_i,\ldots,t_{i+k}] \;=\; \frac{f[t_{i+1},\ldots,t_{i+k}] - f[t_i,\ldots,t_{i+k-1}]}{\cblue{t_{i+k}} - \cblue{t_i}} $$</p>
+    <dl class="legend">
+      <dt>$\cblue{t_i}$</dt><dd>Stützstellen (Parameterwerte), hier $t_i = 0, 1, 2, 3$</dd>
+      <dt>$f_i$</dt><dd>Stützwerte — hier einmal die $\camber{x_i}$, einmal die $\cteal{y_i}$</dd>
+      <dt>$f[t_i,\ldots,t_{i+k}]$</dt><dd>dividierte Differenz $k$-ter Ordnung (aus zwei Differenzen der Ordnung $k-1$)</dd>
+      <dt>$f[t_0,\ldots,t_k]$</dt><dd>oberste Schrägzeile des Differenzenschemas = Newton-Koeffizient vor $\prod_{j&lt;k}(t-t_j)$</dd>
+      <dt>$p(t)$</dt><dd>Interpolationspolynom vom Grad $\le n$ (hier $n = 3$)</dd>
+      <dt>$n$</dt><dd>Anzahl Stützstellen minus 1, hier $n = 3$</dd>
+    </dl>
+    <p class="step-desc" style="margin-top:8px">Farbkonvention im Differenzenschema: <span class="c-coral">1. Ordnung</span>, <span class="c-purple">2. Ordnung</span>, <span class="c-green">3. Ordnung</span>. Die rot umrandeten Zellen der obersten Schrägzeile sind die Newton-Koeffizienten.</p>
+  </div>
+  <div class="card">
+    <p class="step-title">Konkret für unser Beispiel</p>
+    <p class="step-desc">Äquidistante Stützstellen mit Abstand 1, daher sind die Nenner einfach: $t_{i+1}-t_i = 1$, $t_{i+2}-t_i = 2$, $t_{i+3}-t_i = 3$. Es entstehen zwei kubische Polynome $p_x(t)$ (Schritte 1–2) und $p_y(t)$ (Schritte 3–4); die Kurve ist dann $t \mapsto \bigl(p_x(t),\, p_y(t)\bigr)$ für $t \in [0,3]$.</p>
+  </div>
+</div>
+
+<!-- Step 1 -->
+<div class="step-panel" id="p1">
+  <div class="card">
+    <p class="step-title">Schritt 1 — Differenzenschema für die x-Koordinaten</p>
+    <p class="step-desc">Stützwerte $\camber{x} = (\camber{0}, \camber{1}, \camber{1}, \camber{0})$. Erste Ordnung (Nenner $= 1$):</p>
+    <p>$$ f[t_0,t_1] = \frac{\camber{1}-\camber{0}}{\cblue{1}-\cblue{0}} = \ccoral{1} \qquad f[t_1,t_2] = \frac{\camber{1}-\camber{1}}{\cblue{2}-\cblue{1}} = \ccoral{0} \qquad f[t_2,t_3] = \frac{\camber{0}-\camber{1}}{\cblue{3}-\cblue{2}} = \ccoral{-1} $$</p>
+    <p class="step-desc">Zweite Ordnung (Nenner $t_{i+2}-t_i = 2$) und dritte Ordnung (Nenner $= 3$):</p>
+    <p>$$ f[t_0,t_1,t_2] = \frac{\ccoral{0}-\ccoral{1}}{\cblue{2}} = \cpurple{-\tfrac12} \qquad f[t_1,t_2,t_3] = \frac{\ccoral{-1}-\ccoral{0}}{\cblue{2}} = \cpurple{-\tfrac12} \qquad f[t_0,t_1,t_2,t_3] = \frac{\cpurple{-\tfrac12}-\bigl(\cpurple{-\tfrac12}\bigr)}{\cblue{3}} = \cgreen{0} $$</p>
+    <div class="dd-grid" style="grid-template-columns:repeat(5,64px);margin-top:12px">
+      <div class="dd-head">tᵢ</div><div class="dd-head">xᵢ</div><div class="dd-head">1. Ord.</div><div class="dd-head">2. Ord.</div><div class="dd-head">3. Ord.</div>
+      <div class="dd-cell hi-blue" style="grid-row:2;grid-column:1">0</div>
+      <div class="dd-cell hi-amber top" style="grid-row:2;grid-column:2">0</div>
+      <div class="dd-cell hi-coral top" style="grid-row:3;grid-column:3">1</div>
+      <div class="dd-cell hi-blue" style="grid-row:4;grid-column:1">1</div>
+      <div class="dd-cell hi-amber" style="grid-row:4;grid-column:2">1</div>
+      <div class="dd-cell hi-purple top" style="grid-row:4;grid-column:4">−1/2</div>
+      <div class="dd-cell hi-coral" style="grid-row:5;grid-column:3">0</div>
+      <div class="dd-cell hi-green top" style="grid-row:5;grid-column:5">0</div>
+      <div class="dd-cell hi-blue" style="grid-row:6;grid-column:1">2</div>
+      <div class="dd-cell hi-amber" style="grid-row:6;grid-column:2">1</div>
+      <div class="dd-cell hi-purple" style="grid-row:6;grid-column:4">−1/2</div>
+      <div class="dd-cell hi-coral" style="grid-row:7;grid-column:3">−1</div>
+      <div class="dd-cell hi-blue" style="grid-row:8;grid-column:1">3</div>
+      <div class="dd-cell hi-amber" style="grid-row:8;grid-column:2">0</div>
+    </div>
+    <p class="dd-note">Jede Zelle = (Zelle rechts unten der Vorspalte − Zelle rechts oben der Vorspalte) / Stützstellenabstand. Rot umrandet: die Newton-Koeffizienten $\camber{0}, \ccoral{1}, \cpurple{-\tfrac12}, \cgreen{0}$.</p>
+  </div>
+</div>
+
+<!-- Step 2 -->
+<div class="step-panel" id="p2">
+  <div class="card">
+    <p class="step-title">Schritt 2 — Newton-Polynom p_x(t) aufstellen</p>
+    <p class="step-desc">Die oberste Schrägzeile des Schemas liefert die Koeffizienten — einsetzen in die Newton-Form:</p>
+    <p>$$ p_x(t) \;=\; \camber{0} \;+\; \ccoral{1}\cdot(t-\cblue{0}) \;+\; \bigl(\cpurple{-\tfrac12}\bigr)(t-\cblue{0})(t-\cblue{1}) \;+\; \cgreen{0}\cdot(t-\cblue{0})(t-\cblue{1})(t-\cblue{2}) $$</p>
+    <p class="step-desc">Ausmultiplizieren und vereinfachen — der kubische Term fällt weg ($\cgreen{0}$), es bleibt nur eine Parabel:</p>
+    <p>$$ p_x(t) \;=\; t - \tfrac12\,t(t-1) \;=\; t - \tfrac12 t^2 + \tfrac12 t \quad\Longrightarrow\quad \boxed{\;p_x(t) = \tfrac32\,t - \tfrac12\,t^2 = \tfrac{t\,(3-t)}{2}\;} $$</p>
+    <p class="step-desc">Probe an allen Stützstellen:</p>
+    <table class="conv-table">
+      <thead><tr><th>tᵢ</th><th>p_x(tᵢ)</th><th>Soll xᵢ</th><th></th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>0</td><td>0</td><td>(korrekt)</td></tr>
+        <tr><td>1</td><td>3/2 − 1/2 = 1</td><td>1</td><td>(korrekt)</td></tr>
+        <tr><td>2</td><td>3 − 2 = 1</td><td>1</td><td>(korrekt)</td></tr>
+        <tr><td>3</td><td>9/2 − 9/2 = 0</td><td>0</td><td>(korrekt)</td></tr>
+      </tbody>
+    </table>
+    <p class="step-desc" style="margin-top:8px">Dass der Grad auf 2 fällt, sieht man im Schema sofort an $f[t_0,\ldots,t_3] = \cgreen{0}$ — die x-Daten sind symmetrisch ($0,1,1,0$) und liegen exakt auf einer Parabel.</p>
+  </div>
+</div>
+
+<!-- Step 3 -->
+<div class="step-panel" id="p3">
+  <div class="card">
+    <p class="step-title">Schritt 3 — Differenzenschema für die y-Koordinaten</p>
+    <p class="step-desc">Stützwerte $\cteal{y} = (\cteal{0}, \cteal{1}, \cteal{0}, \cteal{1})$. Erste Ordnung:</p>
+    <p>$$ f[t_0,t_1] = \frac{\cteal{1}-\cteal{0}}{\cblue{1}} = \ccoral{1} \qquad f[t_1,t_2] = \frac{\cteal{0}-\cteal{1}}{\cblue{1}} = \ccoral{-1} \qquad f[t_2,t_3] = \frac{\cteal{1}-\cteal{0}}{\cblue{1}} = \ccoral{1} $$</p>
+    <p class="step-desc">Zweite und dritte Ordnung:</p>
+    <p>$$ f[t_0,t_1,t_2] = \frac{\ccoral{-1}-\ccoral{1}}{\cblue{2}} = \cpurple{-1} \qquad f[t_1,t_2,t_3] = \frac{\ccoral{1}-(\ccoral{-1})}{\cblue{2}} = \cpurple{1} \qquad f[t_0,t_1,t_2,t_3] = \frac{\cpurple{1}-(\cpurple{-1})}{\cblue{3}} = \cgreen{\tfrac23} $$</p>
+    <div class="dd-grid" style="grid-template-columns:repeat(5,64px);margin-top:12px">
+      <div class="dd-head">tᵢ</div><div class="dd-head">yᵢ</div><div class="dd-head">1. Ord.</div><div class="dd-head">2. Ord.</div><div class="dd-head">3. Ord.</div>
+      <div class="dd-cell hi-blue" style="grid-row:2;grid-column:1">0</div>
+      <div class="dd-cell hi-teal top" style="grid-row:2;grid-column:2">0</div>
+      <div class="dd-cell hi-coral top" style="grid-row:3;grid-column:3">1</div>
+      <div class="dd-cell hi-blue" style="grid-row:4;grid-column:1">1</div>
+      <div class="dd-cell hi-teal" style="grid-row:4;grid-column:2">1</div>
+      <div class="dd-cell hi-purple top" style="grid-row:4;grid-column:4">−1</div>
+      <div class="dd-cell hi-coral" style="grid-row:5;grid-column:3">−1</div>
+      <div class="dd-cell hi-green top" style="grid-row:5;grid-column:5">2/3</div>
+      <div class="dd-cell hi-blue" style="grid-row:6;grid-column:1">2</div>
+      <div class="dd-cell hi-teal" style="grid-row:6;grid-column:2">0</div>
+      <div class="dd-cell hi-purple" style="grid-row:6;grid-column:4">1</div>
+      <div class="dd-cell hi-coral" style="grid-row:7;grid-column:3">1</div>
+      <div class="dd-cell hi-blue" style="grid-row:8;grid-column:1">3</div>
+      <div class="dd-cell hi-teal" style="grid-row:8;grid-column:2">1</div>
+    </div>
+    <p class="dd-note">Rot umrandet: die Newton-Koeffizienten $\cteal{0}, \ccoral{1}, \cpurple{-1}, \cgreen{\tfrac23}$. Hier ist die 3. Differenz $\neq 0$ — $p_y$ wird wirklich kubisch.</p>
+  </div>
+</div>
+
+<!-- Step 4 -->
+<div class="step-panel" id="p4">
+  <div class="card">
+    <p class="step-title">Schritt 4 — Newton-Polynom p_y(t) aufstellen</p>
+    <p class="step-desc">Koeffizienten aus der obersten Schrägzeile in die Newton-Form einsetzen:</p>
+    <p>$$ p_y(t) \;=\; \cteal{0} \;+\; \ccoral{1}\cdot(t-\cblue{0}) \;+\; (\cpurple{-1})(t-\cblue{0})(t-\cblue{1}) \;+\; \cgreen{\tfrac23}\,(t-\cblue{0})(t-\cblue{1})(t-\cblue{2}) $$</p>
+    <p class="step-desc">Ausmultiplizieren — mit $t(t-1) = t^2 - t$ und $t(t-1)(t-2) = t^3 - 3t^2 + 2t$:</p>
+    <p>$$ p_y(t) \;=\; t - (t^2 - t) + \tfrac23\,(t^3 - 3t^2 + 2t) \;=\; \tfrac23 t^3 - t^2 - 2t^2 + t + t + \tfrac43 t $$</p>
+    <p>$$ \Longrightarrow\quad \boxed{\;p_y(t) = \tfrac23\,t^3 - 3\,t^2 + \tfrac{10}{3}\,t\;} $$</p>
+    <p class="step-desc">Probe an allen Stützstellen:</p>
+    <table class="conv-table">
+      <thead><tr><th>tᵢ</th><th>p_y(tᵢ)</th><th>Soll yᵢ</th><th></th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>0</td><td>0</td><td>(korrekt)</td></tr>
+        <tr><td>1</td><td>2/3 − 3 + 10/3 = 1</td><td>1</td><td>(korrekt)</td></tr>
+        <tr><td>2</td><td>16/3 − 12 + 20/3 = 0</td><td>0</td><td>(korrekt)</td></tr>
+        <tr><td>3</td><td>18 − 27 + 10 = 1</td><td>1</td><td>(korrekt)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Step 5 -->
+<div class="step-panel" id="p5">
+  <div class="card">
+    <p class="step-title">Schritt 5 — Die interpolierte Kurve</p>
+    <p class="step-desc">Beide Komponenten zusammen ergeben die parametrische Kurve für $t \in [0,3]$:</p>
+    <p>$$ z(t) \;=\; \begin{pmatrix} p_x(t) \\ p_y(t) \end{pmatrix} \;=\; \begin{pmatrix} \tfrac32 t - \tfrac12 t^2 \\[4pt] \tfrac23 t^3 - 3t^2 + \tfrac{10}{3} t \end{pmatrix} $$</p>
+    <svg id="curveplot" viewBox="0 0 520 440" role="img" aria-label="Parametrische Interpolationskurve"></svg>
+    <p class="dd-note">Kurve $z(t)$ (violett) mit den vier Stützpunkten (rot). Die Kurve läuft von $z_0=(0,0)$ über $z_1=(1,1)$ und $z_2=(1,0)$ nach $z_3=(0,1)$.</p>
+  </div>
+  <div class="card">
+    <p class="step-title">Werte-Tabelle</p>
+    <table class="conv-table">
+      <thead><tr><th>t</th><th>p_x(t)</th><th>p_y(t)</th><th>Punkt</th></tr></thead>
+      <tbody id="vtbody"></tbody>
+    </table>
+    <p class="step-desc" style="margin-top:8px"><strong>Merke:</strong> Parametrische Interpolation = komponentenweise Interpolation über einem gemeinsamen Parameter $t$. Das Differenzenschema ist pro Komponente identisch aufgebaut — nur die Stützwerte ändern sich. Achtung in der Prüfung: erst prüfen, ob die Punkte überhaupt als Funktion $y(x)$ interpolierbar wären — hier nicht, da zu $x = 1$ (und $x = 0$) je zwei verschiedene $y$-Werte gehören.</p>
+  </div>
+</div>
+
+<script>
+function showStep(i){
+  document.querySelectorAll('.step-panel').forEach((p,j)=>p.classList.toggle('visible',j===i));
+  document.querySelectorAll('.step-btn').forEach((b,j)=>b.classList.toggle('active',j===i));
+}
+
+const px = t => 1.5*t - 0.5*t*t;
+const py = t => (2/3)*t*t*t - 3*t*t + (10/3)*t;
+
+(function drawCurve(){
+  const svg = document.getElementById('curveplot');
+  const W = 520, H = 440;
+  // Datenbereich: x in [-0.15, 1.35], y in [-0.25, 1.30]
+  const x0=-0.15, x1=1.35, y0=-0.25, y1=1.30;
+  const sx = v => (v-x0)/(x1-x0)*(W-40)+20;
+  const sy = v => H-20-(v-y0)/(y1-y0)*(H-40);
+  let s = '';
+  // Gitterlinien + Achsen
+  for(let gx=0; gx<=1; gx+=0.5) s += `<line class="gridline" x1="${sx(gx)}" y1="${sy(y0)}" x2="${sx(gx)}" y2="${sy(y1)}"/>`;
+  for(let gy=0; gy<=1; gy+=0.5) s += `<line class="gridline" x1="${sx(x0)}" y1="${sy(gy)}" x2="${sx(x1)}" y2="${sy(gy)}"/>`;
+  s += `<line class="axis" x1="${sx(x0)}" y1="${sy(0)}" x2="${sx(x1)}" y2="${sy(0)}"/>`;
+  s += `<line class="axis" x1="${sx(0)}" y1="${sy(y0)}" x2="${sx(0)}" y2="${sy(y1)}"/>`;
+  s += `<text x="${sx(1)+4}" y="${sy(0)+14}">x=1</text><text x="${sx(0)-26}" y="${sy(1)+4}">y=1</text>`;
+  // Kurve
+  let pts = [];
+  for(let t=0; t<=3.0001; t+=0.025) pts.push(`${sx(px(t)).toFixed(1)},${sy(py(t)).toFixed(1)}`);
+  s += `<polyline class="curve" points="${pts.join(' ')}"/>`;
+  // Stützpunkte
+  const Z = [[0,0,'z₀ (t=0)',8,16],[1,1,'z₁ (t=1)',8,-8],[1,0,'z₂ (t=2)',8,16],[0,1,'z₃ (t=3)',-62,-8]];
+  Z.forEach(([zx,zy,label,dx,dy])=>{
+    s += `<circle class="pt" cx="${sx(zx)}" cy="${sy(zy)}" r="5"/><text x="${sx(zx)+dx}" y="${sy(zy)+dy}">${label}</text>`;
+  });
+  svg.innerHTML = s;
+})();
+
+(function buildTable(){
+  const tb = document.getElementById('vtbody');
+  const labels = {0:'z₀', 1:'z₁', 2:'z₂', 3:'z₃'};
+  let rows = '';
+  for(let t=0; t<=3.0001; t+=0.5){
+    const mark = Number.isInteger(t) ? labels[t]+' (Stützpunkt)' : '';
+    rows += `<tr><td>${t.toFixed(1)}</td><td>${px(t).toFixed(4)}</td><td>${py(t).toFixed(4)}</td><td>${mark}</td></tr>`;
+  }
+  tb.innerHTML = rows;
+})();
+</script>
+</body>
+</html>

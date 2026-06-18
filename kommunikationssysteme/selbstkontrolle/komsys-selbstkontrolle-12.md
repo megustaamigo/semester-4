@@ -70,7 +70,7 @@ Welche Felder hat ein TCP-Segment-Header?::Source Port, Destination Port, Sequen
 Was bedeuten die Code-Bits URG, ACK, PSH, RST, SYN, FIN?::URG: Urgent Pointer ist gueltig. ACK: Acknowledgement Field ist gueltig. PSH: Empfaenger soll Daten sofort ausliefern (Push). RST: Verbindung zuruecksetzen. SYN: Synchronize Sequence Numbers (Verbindungsaufbau). FIN: Sender hat Ende seines Byte-Streams erreicht.
 
 Welche typischen MSS-Werte gibt es?::1460 Byte (Ethernet) oder 536 Byte. Die MSS wird so gewaehlt, dass **IP-Fragmentierung vermieden** wird. Die MSS haengt vom Betriebssystem und der TCP-Konfiguration ab.
-<!--SR:!2026-05-22,1,230-->
+<!--SR:!2026-06-20,2,230-->
 
 Was ist das Push-Flag (PSH)?::Damit der Empfaenger seinen Puffer nicht unnoetig fuellt: Ein gesetztes PSH-Flag bedeutet, dass die Daten **direkt beim naechsten read** ausgeliefert werden sollen, ohne Pufferung. Eine Terminal-Emulation setzt PSH bei CRLF. In der Praxis ist ein **Flush auf den Output-Stream** ein guter Ansatz.
 

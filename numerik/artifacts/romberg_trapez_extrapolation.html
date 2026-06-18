@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Romberg-Verfahren — Trapezregel + Richardson-Extrapolation</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ],
+          trust: true,
+          strict: 'ignore',
+          macros: {
+            '\\cblue':   '\\htmlClass{c-blue}{#1}',
+            '\\cteal':   '\\htmlClass{c-teal}{#1}',
+            '\\camber':  '\\htmlClass{c-amber}{#1}',
+            '\\ccoral':  '\\htmlClass{c-coral}{#1}',
+            '\\cpurple': '\\htmlClass{c-purple}{#1}',
+            '\\cred':    '\\htmlClass{c-red}{#1}',
+            '\\cgreen':  '\\htmlClass{c-green}{#1}'
+          }
+        });"></script>
+<style>
+.legend{font-size:13px;color:var(--color-text-secondary);line-height:1.7;background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 16px;margin:10px 0;display:grid;grid-template-columns:max-content 1fr;column-gap:14px;row-gap:6px;align-items:baseline}
+.legend dt{font-family:var(--font-mono);color:var(--color-text-primary);font-weight:500;margin:0}
+.legend dd{margin:0}
+.katex{font-size:0.9em}
+.katex-display{margin:0.5em 0}
+:root {
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #f4f4f5;
+  --color-text-primary: #18181b;
+  --color-text-secondary: #52525b;
+  --color-text-tertiary: #a1a1aa;
+  --color-border-primary: #d4d4d8;
+  --color-border-secondary: #e4e4e7;
+  --color-border-tertiary: #f4f4f5;
+  --border-radius-md: 6px;
+  --border-radius-lg: 10px;
+  --hl-blue:   #0C447C;
+  --hl-teal:   #085041;
+  --hl-amber:  #633806;
+  --hl-coral:  #712B13;
+  --hl-purple: #3C3489;
+  --hl-red:    #791F1F;
+  --hl-green:  #27500A;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background-primary: #1a1a1a;
+    --color-background-secondary: #2a2a2a;
+    --color-text-primary: #f4f4f5;
+    --color-text-secondary: #a1a1aa;
+    --color-text-tertiary: #71717a;
+    --color-border-primary: #52525b;
+    --color-border-secondary: #3f3f46;
+    --color-border-tertiary: #27272a;
+    --hl-blue:   #B5D4F4;
+    --hl-teal:   #9FE1CB;
+    --hl-amber:  #FAC775;
+    --hl-coral:  #F5C4B3;
+    --hl-purple: #CECBF6;
+    --hl-red:    #F7C1C1;
+    --hl-green:  #C0DD97;
+  }
+  body { background: #18181b; color: #f4f4f5; }
+}
+body { font-family: var(--font-sans); padding: 1.5rem; max-width: 1100px; margin: 0 auto; }
+
+.c-blue   { color: var(--hl-blue);   font-weight: 600 }
+.c-teal   { color: var(--hl-teal);   font-weight: 600 }
+.c-amber  { color: var(--hl-amber);  font-weight: 600 }
+.c-coral  { color: var(--hl-coral);  font-weight: 600 }
+.c-purple { color: var(--hl-purple); font-weight: 600 }
+.c-red    { color: var(--hl-red);    font-weight: 600 }
+.c-green  { color: var(--hl-green);  font-weight: 600 }
+
+.step-nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.5rem}
+.step-btn{padding:6px 14px;font-size:13px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);cursor:pointer}
+.step-btn.active{background:var(--color-background-secondary);color:var(--color-text-primary);border-color:var(--color-border-primary);font-weight:500}
+.step-panel{display:none}
+.step-panel.visible{display:block}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:1rem}
+.step-title{font-size:16px;font-weight:500;color:var(--color-text-primary);margin:0 0 8px}
+.step-desc{font-size:14px;color:var(--color-text-secondary);line-height:1.6;margin:0 0 8px}
+.cell{width:56px;height:36px;display:flex;align-items:center;justify-content:center;font-size:14px;border-radius:4px;background:var(--color-background-secondary);color:var(--color-text-primary)}
+.cell.hi-blue{background:#B5D4F4;color:#0C447C;font-weight:500}
+.cell.hi-teal{background:#9FE1CB;color:#085041;font-weight:500}
+.cell.hi-amber{background:#FAC775;color:#633806;font-weight:500}
+.cell.hi-coral{background:#F5C4B3;color:#712B13;font-weight:500}
+.cell.hi-purple{background:#CECBF6;color:#3C3489;font-weight:500}
+.cell.hi-red{background:#F7C1C1;color:#791F1F;font-weight:500}
+.cell.hi-green{background:#C0DD97;color:#27500A;font-weight:500}
+.cell.zero{color:var(--color-text-tertiary)}
+@media(prefers-color-scheme:dark){
+  .cell.hi-blue{background:#0C447C;color:#B5D4F4}
+  .cell.hi-teal{background:#085041;color:#9FE1CB}
+  .cell.hi-amber{background:#633806;color:#FAC775}
+  .cell.hi-coral{background:#712B13;color:#F5C4B3}
+  .cell.hi-purple{background:#3C3489;color:#CECBF6}
+  .cell.hi-red{background:#791F1F;color:#F7C1C1}
+  .cell.hi-green{background:#27500A;color:#C0DD97}
+}
+.conv-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+.conv-table th{text-align:left;padding:6px 8px;color:var(--color-text-secondary);font-weight:500;border-bottom:0.5px solid var(--color-border-tertiary)}
+.conv-table td{padding:5px 8px;color:var(--color-text-primary);border-bottom:0.5px solid var(--color-border-tertiary);font-family:var(--font-mono);font-size:13px}
+.conv-table tr:last-child td{border-bottom:none}
+.plot{display:flex;justify-content:center;margin:1rem 0}
+.plot svg{width:480px;max-width:100%;height:auto}
+.tableau{display:flex;flex-direction:column;align-items:center;gap:6px;margin:1rem 0}
+.trow{display:flex;align-items:center;gap:6px}
+.rlabel{font-size:12px;color:var(--color-text-secondary);width:104px;text-align:right;font-family:var(--font-mono)}
+.thead{font-size:11px;line-height:1.2;color:var(--color-text-secondary);width:56px;text-align:center}
+.arrow-flow{display:flex;align-items:center;gap:8px;justify-content:center;flex-wrap:wrap;margin:6px 0}
+.note{font-size:13px;line-height:1.65;border-left:3px solid var(--hl-coral);background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 14px;margin:12px 0;color:var(--color-text-secondary)}
+.note strong{color:var(--color-text-primary)}
+.result-box{text-align:center;border-radius:var(--border-radius-md);padding:12px 16px;margin-top:8px}
+</style>
+</head>
+<body>
+
+<div class="step-nav">
+  <button class="step-btn active" onclick="showStep(0)">0 · Aufgabe</button>
+  <button class="step-btn" onclick="showStep(1)">1 · T₁ (h=4)</button>
+  <button class="step-btn" onclick="showStep(2)">2 · T₂ (h=2)</button>
+  <button class="step-btn" onclick="showStep(3)">3 · T₄ (h=1)</button>
+  <button class="step-btn" onclick="showStep(4)">4 · Extrapolation k=1</button>
+  <button class="step-btn" onclick="showStep(5)">5 · Tableau & Ergebnis</button>
+</div>
+
+<!-- Step 0 -->
+<div class="step-panel visible" id="p0">
+  <div class="card">
+    <p class="step-title">Das Integral</p>
+    <p class="step-desc">Gesucht ist eine numerische Näherung für</p>
+    <p>$$ I \;=\; \int_{-2}^{2} \cteal{f(x)}\,dx \;=\; \int_{-2}^{2} \frac{135\,x^2}{2+|x|}\,dx $$</p>
+    <p class="step-desc">Das <strong>Romberg-Verfahren</strong> berechnet zuerst mehrere zusammengesetzte <em>Trapezsummen</em> $\camber{T(h)}$ mit halbierter Schrittweite und verbessert sie dann durch <em>Richardson-Extrapolation</em>. Hier verwenden wir $\camber{T_1}$ ($1$ Intervall, $h=4$), $\camber{T_2}$ ($2$ Intervalle, $h=2$) und $\camber{T_4}$ ($4$ Intervalle, $h=1$) — der <strong>Index ist die Anzahl der Teilintervalle $n$</strong>.</p>
+    <div class="plot" id="plot0"></div>
+    <p class="step-desc" style="text-align:center">Der Integrand: ein Tal von $\cteal{f(0)=0}$ hinauf zu $\cteal{f(\pm2)=135}$. Wegen $|x|$ ist $f$ <strong>gerade</strong> ($f(-x)=f(x)$) und symmetrisch zur $y$-Achse.</p>
+  </div>
+
+  <div class="card">
+    <p class="step-title">Zusammengesetzte Trapezregel</p>
+    <p class="step-desc">Bei $n$ gleich breiten Teilintervallen mit $h=\frac{b-a}{n}$ und Stützstellen $x_j=a+jh$ gilt:</p>
+    <p>$$ \camber{T(h)} \;=\; h\left[\, \tfrac12\,\cteal{f(x_0)} \;+\; \sum_{j=1}^{n-1}\cteal{f(x_j)} \;+\; \tfrac12\,\cteal{f(x_n)} \,\right] $$</p>
+    <p class="step-desc">Innere Stützstellen zählen voll, die beiden Randpunkte nur halb.</p>
+    <dl class="legend">
+      <dt>$\cteal{f(x)}$</dt><dd>Integrand, hier $\cteal{f(x)} = \dfrac{135\,x^2}{2+|x|}$</dd>
+      <dt>$a,\ b$</dt><dd>Integrationsgrenzen, hier $a=-2$, $b=2$, also $b-a=4$</dd>
+      <dt>$n$</dt><dd>Anzahl der Teilintervalle ($n=1,2,4$ — jeweils verdoppelt)</dd>
+      <dt>$h=\frac{b-a}{n}$</dt><dd>Schrittweite (Abstand der Stützstellen)</dd>
+      <dt>$x_j=a+jh$</dt><dd>Stützstellen, $j=0,1,\dots,n$</dd>
+      <dt>$\camber{T(h)}$</dt><dd>zusammengesetzte Trapezsumme zur Schrittweite $h$ (= Spalte $k=0$ des Tableaus)</dd>
+    </dl>
+  </div>
+
+  <div class="card">
+    <p class="step-title">Romberg-Extrapolation</p>
+    <p class="step-desc">Die Trapezsumme hat eine Fehlerentwicklung in geraden $h$-Potenzen ($h^2, h^4, \dots$). Zwei Trapezwerte mit halbierter Schrittweite lassen sich daher zu einem genaueren Wert kombinieren (Richardson):</p>
+    <p>$$ T_{i,k} \;=\; \frac{\,4^{k}\,T_{i,\,k-1} \;-\; T_{i-1,\,k-1}\,}{4^{k}-1} \qquad k=1,2,\dots,\quad i\ge k $$</p>
+    <dl class="legend">
+      <dt>$T_{i,0}$</dt><dd>Trapezsumme in Zeile $i$ ($i=0,1,2$ ↔ $h=4,2,1$), Spalte $k=0$</dd>
+      <dt>$T_{i,k}$</dt><dd>extrapolierter Wert in Zeile $i$, Spalte $k$ — genauer als die Spalte links davon</dd>
+      <dt>$4^{k}$</dt><dd>Extrapolationsfaktor: eliminiert den führenden $h^{2k}$-Fehlerterm</dd>
+      <dt>$\ccoral{T_{i,1}}$</dt><dd>1. Spalte — entspricht genau der <strong>Simpson-Regel</strong></dd>
+      <dt>$\cpurple{T_{i,2}}$</dt><dd>2. Spalte — der beste Wert, hier das Endergebnis</dd>
+    </dl>
+  </div>
+
+  <div class="card">
+    <p class="step-title">Benötigte Funktionswerte</p>
+    <p class="step-desc">Alle Stützstellen der drei Trapezsummen liegen auf dem Gitter $x=-2,-1,0,1,2$:</p>
+    <table class="conv-table">
+      <thead><tr><th>$x$</th><th>−2</th><th>−1</th><th>0</th><th>1</th><th>2</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>$f(x)=\frac{135x^2}{2+|x|}$</td>
+          <td><span class="c-teal">135</span></td>
+          <td><span class="c-teal">45</span></td>
+          <td><span class="c-teal">0</span></td>
+          <td><span class="c-teal">45</span></td>
+          <td><span class="c-teal">135</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="step-desc" style="margin-top:10px">z.&nbsp;B. $f(-2)=\dfrac{135\cdot 4}{2+2}=\dfrac{540}{4}=135$, &nbsp; $f(-1)=\dfrac{135\cdot 1}{2+1}=\dfrac{135}{3}=45$, &nbsp; $f(0)=\dfrac{0}{2}=0$.</p>
+  </div>
+</div>
+
+<!-- Step 1 -->
+<div class="step-panel" id="p1">
+  <div class="card">
+    <p class="step-title">T₁ — Trapezregel mit 1 Intervall ($h=4$)</p>
+    <p class="step-desc">Nur die beiden Randpunkte $x_0=-2$ und $x_1=2$. Eine einzige (riesige) Trapezfläche über das ganze Intervall:</p>
+    <p>$$ \camber{T_1} = \camber{T_{0,0}} = h\left[\tfrac12\cteal{f(-2)} + \tfrac12\cteal{f(2)}\right] = \frac{4}{2}\left(\cteal{135}+\cteal{135}\right) = 2\cdot 270 = \camber{540} $$</p>
+    <div class="plot" id="plot1"></div>
+    <p class="step-desc" style="text-align:center">Die gerade Verbindung der beiden Hochpunkte schließt fast ein ganzes Rechteck ein — daher die starke Überschätzung ($\camber{540}$).</p>
+  </div>
+</div>
+
+<!-- Step 2 -->
+<div class="step-panel" id="p2">
+  <div class="card">
+    <p class="step-title">T₂ — Trapezregel mit 2 Intervallen ($h=2$)</p>
+    <p class="step-desc">Schrittweite halbiert: zusätzliche Stützstelle bei $x=0$. Der Randterm zählt halb, der innere Punkt $x=0$ voll:</p>
+    <p>$$ \camber{T_2} = \camber{T_{1,0}} = h\left[\tfrac12\cteal{f(-2)} + \cteal{f(0)} + \tfrac12\cteal{f(2)}\right] = 2\left(\tfrac12\cdot\cteal{135} + \cteal{0} + \tfrac12\cdot\cteal{135}\right) = 2\cdot 135 = \camber{270} $$</p>
+    <div class="plot" id="plot2"></div>
+    <p class="step-desc" style="text-align:center">Der Knick bei $x=0$ (Funktionswert $0$) zieht die Näherung deutlich nach unten: $\camber{540}\to\camber{270}$.</p>
+  </div>
+</div>
+
+<!-- Step 3 -->
+<div class="step-panel" id="p3">
+  <div class="card">
+    <p class="step-title">T₄ — Trapezregel mit 4 Intervallen ($h=1$)</p>
+    <p class="step-desc">Nochmals halbiert: innere Stützstellen bei $x=-1,0,1$ (alle voll gezählt), Ränder halb:</p>
+    <p>$$ \camber{T_4} = \camber{T_{2,0}} = h\left[\tfrac12\cteal{f(-2)} + \cteal{f(-1)} + \cteal{f(0)} + \cteal{f(1)} + \tfrac12\cteal{f(2)}\right] $$</p>
+    <p>$$ = 1\cdot\left(\tfrac12\cdot\cteal{135} + \cteal{45} + \cteal{0} + \cteal{45} + \tfrac12\cdot\cteal{135}\right) = 67{,}5 + 45 + 0 + 45 + 67{,}5 = \camber{225} $$</p>
+    <div class="plot" id="plot3"></div>
+    <p class="step-desc" style="text-align:center">Der Streckenzug schmiegt sich der Kurve schon besser an: $\camber{270}\to\camber{225}$. Die Trapezspalte konvergiert noch langsam.</p>
+  </div>
+</div>
+
+<!-- Step 4 -->
+<div class="step-panel" id="p4">
+  <div class="card">
+    <p class="step-title">Erste Extrapolationsspalte ($k=1$)</p>
+    <p class="step-desc">Jetzt je zwei benachbarte Trapezwerte mit $4^1=4$ kombinieren — das eliminiert den führenden $h^2$-Fehler. Das Ergebnis ist genau die <strong>Simpson-Regel</strong>:</p>
+    <p>$$ \ccoral{T_{1,1}} = \frac{4\,\camber{T_{1,0}} - \camber{T_{0,0}}}{4-1} = \frac{4\cdot\camber{270} - \camber{540}}{3} = \frac{1080-540}{3} = \frac{540}{3} = \ccoral{180} $$</p>
+    <p>$$ \ccoral{T_{2,1}} = \frac{4\,\camber{T_{2,0}} - \camber{T_{1,0}}}{4-1} = \frac{4\cdot\camber{225} - \camber{270}}{3} = \frac{900-270}{3} = \frac{630}{3} = \ccoral{210} $$</p>
+    <div class="arrow-flow">
+      <div class="cell hi-amber">540</div>
+      <span style="color:var(--color-text-tertiary)">+</span>
+      <div class="cell hi-amber">270</div>
+      <span style="font-size:18px;color:var(--color-text-secondary)">→</span>
+      <div class="cell hi-coral">180</div>
+      <span style="width:24px"></span>
+      <div class="cell hi-amber">270</div>
+      <span style="color:var(--color-text-tertiary)">+</span>
+      <div class="cell hi-amber">225</div>
+      <span style="font-size:18px;color:var(--color-text-secondary)">→</span>
+      <div class="cell hi-coral">210</div>
+    </div>
+    <p class="step-desc" style="margin-top:10px">Jeder $\ccoral{\text{Korallwert}}$ entsteht aus den <span class="c-amber">zwei Trapezwerten darüber</span> (feiner $\times 4$ minus gröber, geteilt durch $3$).</p>
+  </div>
+</div>
+
+<!-- Step 5 -->
+<div class="step-panel" id="p5">
+  <div class="card">
+    <p class="step-title">Zweite Extrapolationsspalte ($k=2$)</p>
+    <p class="step-desc">Die beiden Simpson-Werte werden mit $4^2=16$ noch einmal extrapoliert ($h^4$-Fehler eliminiert):</p>
+    <p>$$ \cpurple{T_{2,2}} = \frac{4^2\,\ccoral{T_{2,1}} - \ccoral{T_{1,1}}}{4^2-1} = \frac{16\cdot\ccoral{210} - \ccoral{180}}{15} = \frac{3360-180}{15} = \frac{3180}{15} = \cpurple{212} $$</p>
+  </div>
+
+  <div class="card">
+    <p class="step-title">Das vollständige Romberg-Tableau</p>
+    <p class="step-desc">Jede Spalte entsteht aus der links daneben — von der groben Trapezspalte ($k=0$) bis zum besten Wert rechts unten:</p>
+    <div class="tableau">
+      <div class="trow"><span class="rlabel"></span><span class="thead">k=0<br>Trapez</span><span class="thead">k=1<br>Simpson</span><span class="thead">k=2</span></div>
+      <div class="trow"><span class="rlabel">h=4 &nbsp;(n=1)</span><div class="cell hi-amber">540</div></div>
+      <div class="trow"><span class="rlabel">h=2 &nbsp;(n=2)</span><div class="cell hi-amber">270</div><div class="cell hi-coral">180</div></div>
+      <div class="trow"><span class="rlabel">h=1 &nbsp;(n=4)</span><div class="cell hi-amber">225</div><div class="cell hi-coral">210</div><div class="cell hi-purple">212</div></div>
+    </div>
+    <div class="result-box" style="background:#EDEBFB;border:0.5px solid #CECBF6">
+      <div style="font-size:18px;font-weight:500;color:#3C3489">$I \approx T_{2,2} = 212$</div>
+      <div style="font-size:13px;color:#3C3489;margin-top:4px">bestes Romberg-Ergebnis</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <p class="step-title">Vergleich mit dem exakten Wert</p>
+    <p class="step-desc">Das Integral lässt sich elementar lösen (Symmetrie + Polynomdivision $\frac{x^2}{2+x}=(x-2)+\frac{4}{2+x}$):</p>
+    <p>$$ I = 2\int_0^2 \frac{135\,x^2}{2+x}\,dx = 270\bigl(-2+4\ln 2\bigr) = \cgreen{208{,}599\ldots} $$</p>
+    <table class="conv-table">
+      <thead><tr><th>Näherung</th><th>Wert</th><th>Fehler $|{\cdot}-I|$</th></tr></thead>
+      <tbody>
+        <tr><td><span class="c-amber">T₁  (Trapez, h=4)</span></td><td>540</td><td>331,40</td></tr>
+        <tr><td><span class="c-amber">T₂  (Trapez, h=2)</span></td><td>270</td><td>61,40</td></tr>
+        <tr><td><span class="c-amber">T₄  (Trapez, h=1)</span></td><td>225</td><td>16,40</td></tr>
+        <tr><td><span class="c-coral">T₁,₁ (Simpson)</span></td><td>180</td><td>28,60</td></tr>
+        <tr><td><span class="c-coral">T₂,₁ (Simpson)</span></td><td>210</td><td>1,40</td></tr>
+        <tr><td><span class="c-purple">T₂,₂ (Romberg)</span></td><td>212</td><td>3,40</td></tr>
+        <tr><td><span class="c-green">exakt</span></td><td>208,60</td><td>—</td></tr>
+      </tbody>
+    </table>
+    <div class="note">
+      <strong>Achtung (lehrreich):</strong> Hier ist $\cpurple{T_{2,2}=212}$ <em>nicht</em> genauer als der Simpson-Wert $\ccoral{T_{2,1}=210}$. Grund: $f(x)=\frac{135x^2}{2+|x|}$ hat wegen $|x|$ bei $x=0$ einen Knick — die dritte Ableitung springt dort. Die Euler-Maclaurin-Entwicklung in reinen $h^2$-Potenzen, auf der die Extrapolation beruht, ist dadurch gestört. Die höheren Romberg-Spalten gewinnen deshalb nicht die volle Ordnung. <strong>Merke:</strong> Romberg ist nur so gut wie die Glattheit des Integranden zulässt.
+    </div>
+  </div>
+</div>
+
+<script>
+const CURVE = "40,20 60,48 80,74.9 100,100.5 120,124.5 140,146.7 160,166.6 180,183.7 200,197.3 220,206.5 240,210 260,206.5 280,197.3 300,183.7 320,166.6 340,146.7 360,124.5 380,100.5 400,74.9 420,48 440,20";
+
+function svgPlot(trapPoints, nodes){
+  const grid = [40,140,240,340,440].map(x =>
+    `<line x1="${x}" y1="210" x2="${x}" y2="20" stroke="var(--color-border-tertiary)" stroke-width="1"/>`).join('');
+  const xlabels = [[40,"−2"],[140,"−1"],[240,"0"],[340,"1"],[440,"2"]].map(([x,t]) =>
+    `<text x="${x}" y="226" text-anchor="middle" font-size="11" fill="var(--color-text-secondary)">${t}</text>`).join('');
+  const ylabels = `<text x="34" y="24" text-anchor="end" font-size="11" fill="var(--color-text-secondary)">135</text>`+
+                  `<text x="34" y="213" text-anchor="end" font-size="11" fill="var(--color-text-secondary)">0</text>`;
+  const trap = trapPoints
+    ? `<polygon points="${trapPoints}" fill="var(--hl-amber)" fill-opacity="0.16" stroke="var(--hl-amber)" stroke-width="1.5" stroke-linejoin="round"/>`
+    : '';
+  const dots = (nodes||[]).map(([cx,cy]) =>
+    `<circle cx="${cx}" cy="${cy}" r="3.5" fill="var(--hl-amber)"/>`).join('');
+  return `<svg viewBox="0 0 480 240">
+    ${grid}
+    <line x1="40" y1="210" x2="440" y2="210" stroke="var(--color-border-primary)" stroke-width="1.5"/>
+    ${ylabels}${xlabels}
+    ${trap}
+    <polyline points="${CURVE}" fill="none" stroke="var(--hl-teal)" stroke-width="2.5" stroke-linejoin="round"/>
+    ${dots}
+  </svg>`;
+}
+
+document.getElementById('plot0').innerHTML = svgPlot(null, []);
+document.getElementById('plot1').innerHTML = svgPlot(
+  "40,210 40,20 440,20 440,210",
+  [[40,20],[440,20]]);
+document.getElementById('plot2').innerHTML = svgPlot(
+  "40,210 40,20 240,210 440,20 440,210",
+  [[40,20],[240,210],[440,20]]);
+document.getElementById('plot3').innerHTML = svgPlot(
+  "40,210 40,20 140,146.7 240,210 340,146.7 440,20 440,210",
+  [[40,20],[140,146.7],[240,210],[340,146.7],[440,20]]);
+
+function showStep(i){
+  document.querySelectorAll('.step-panel').forEach((p,j)=>p.classList.toggle('visible',j===i));
+  document.querySelectorAll('.step-btn').forEach((b,j)=>b.classList.toggle('active',j===i));
+}
+</script>
+</body>
+</html>

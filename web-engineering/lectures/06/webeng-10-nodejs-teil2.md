@@ -23,7 +23,7 @@ source: 10-nodejs-Teil2.pdf
 # 10 — Node.js Teil 2
 
 **Folien:** [[web-engineering/resources/10-nodejs-Teil2.pdf|10-nodejs-Teil2.pdf]]
-**Lernziele:** [[web-engineering/lernziele/webeng-lernziele-10|Lernziele Vorlesung 10]]
+**Lernziele:** [[web-engineering/lernziele/webeng-lernziele-nodejs-teil2|Lernziele Node.js Teil 2]]
 
 ## Inhaltsverzeichnis
 
@@ -551,7 +551,7 @@ flowchart LR
 
 ## Bezug zu Lernzielen
 
-Die kompakten Karteikarten finden sich unter [[web-engineering/lernziele/webeng-lernziele-10|Lernziele Vorlesung 10]]. Im Folgenden ausfuehrliche Antworten zur Pruefungsvorbereitung.
+Die kompakten Karteikarten finden sich unter [[web-engineering/lernziele/webeng-lernziele-nodejs-teil2|Lernziele Node.js Teil 2]]. Im Folgenden ausfuehrliche Antworten zur Pruefungsvorbereitung.
 
 **Was leistet eine Template-Engine?**
 
