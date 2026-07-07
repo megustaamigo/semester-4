@@ -49,6 +49,18 @@ tags: [numerik, index]
 - [[numerik/exercises/10/num-exercise-10|Uebung 10 — Aufgaben]]
 - [[numerik/exercises/10/num-solution-10|Uebung 10 — Loesungen]]
 
+### Blatt 11
+- [[numerik/exercises/11/num-exercise-11|Uebung 11 — Aufgaben]]
+- [[numerik/exercises/11/num-solution-11|Uebung 11 — Loesungen]]
+
+### Blatt 12
+- [[numerik/exercises/12/num-exercise-12|Uebung 12 — Aufgaben]]
+- [[numerik/exercises/12/num-solution-12|Uebung 12 — Loesungen]]
+
+### Blatt 13
+- [[numerik/exercises/13/num-exercise-13|Uebung 13 — Aufgaben]]
+- [[numerik/exercises/13/num-solution-13|Uebung 13 — Loesungen]]
+
 ## Exam Prep
 
 - [[numerik/num-exam-concepts|Exam Concepts — LU, Pivotsuche, Cholesky]]
@@ -65,6 +77,9 @@ tags: [numerik, index]
 - [[numerik/resources/NumI-08.pdf|NumI-08.pdf]]
 - [[numerik/resources/NumI-09.pdf|NumI-09.pdf]]
 - [[numerik/resources/NumI-10.pdf|NumI-10.pdf]]
+- [[numerik/resources/NumI-11.pdf|NumI-11.pdf]]
+- [[numerik/resources/NumI-12.pdf|NumI-12.pdf]]
+- [[numerik/resources/NumI-13.pdf|NumI-13.pdf]]
 
 ## Praktikum (Python)
 
@@ -79,4 +94,6 @@ Local repo: `numerik/repos/numerik/` (Python + numpy + scipy + matplotlib, venv 
 - `blatt08/` — Blatt 8 (Newton- und Sekanten-Verfahren, nichtlineares System)
 - `blatt09/` — Blatt 9 (Newton-Interpolation, Horner-Schema, Runge-Phaenomen)
 - `blatt10/` — Blatt 10 (Lineare Ausgleichsrechnung, Pseudoinverse & TSVD-Regularisierung)
+- `blatt11/` — Blatt 11 (Numerische Integration: Trapez/Simpson/Gauss G2, Romberg- & Bulirsch-Extrapolation, adaptive Trapezregel)
+- `blatt13/` — Blatt 13 (BFGS-Quasi-Newton mit Armijo-Liniensuche) — Blatt 12 ist reine Theorie (kein Code)
 - `membran_lib.py` — Hilfsbibliothek (Ablock, system, ew_exakt, plotxk, plotev, animev)
