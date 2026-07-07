@@ -65,6 +65,11 @@ tags: [numerik, index]
 
 - [[numerik/num-exam-concepts|Exam Concepts — LU, Pivotsuche, Cholesky]]
 
+### Probeklausuren (mit Loesungen)
+- [[numerik/exams/test-exam-2012-loesung|Probeklausur 2012 (SS, 04.07.2012) — Loesung]] · [[numerik/exams/test-exam-2012.pdf|Klausur-PDF]]
+- [[numerik/exams/test-exam-2021-loesung|Probeklausur 2021 (12.07.2021) — Loesung]] · [[numerik/exams/test-exam-2021.pdf|Klausur-PDF]]
+- [[numerik/exams/test-exam-2024-loesung|Probeklausur 2024 (16.07.2024, Gedaechtnisprotokoll) — Loesung]] · [[numerik/exams/test-exam-2024.pdf|Klausur-PDF]]
+
 ## Resources
 
 - [[numerik/resources/NumI-01.pdf|NumI-01.pdf]]
