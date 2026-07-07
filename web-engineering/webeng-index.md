@@ -61,6 +61,13 @@ tags: [web-engineering, index]
 ### Vorlesung 10 — Java (Servlets & JSP)
 - [[web-engineering/lectures/10/webeng-15-java|15 — Java: Servlets & Java Server Pages]]
 
+### Vorlesung 11 — HTTPS & Tokens
+- [[web-engineering/lectures/11/webeng-16-https|16 — HTTPS (TLS, PKI & Zertifikate)]]
+- [[web-engineering/lectures/11/webeng-17-tokens|17 — Tokens (OAuth2 & OpenID Connect)]]
+
+### Vorlesung 12 — OWASP & Web-Sicherheit
+- [[web-engineering/lectures/12/webeng-18-owasp|18 — OWASP & Web-Sicherheit]]
+
 ## Exercises
 
 - [[web-engineering/exercises/webeng-exercise-01-html-css|Exercise 1 — HTML & CSS Landingpage]]
@@ -82,3 +89,6 @@ tags: [web-engineering, index]
 - [[web-engineering/resources/13-JavaScript-Rest.pdf|13-JavaScript-Rest.pdf]]
 - [[web-engineering/resources/14-Server.pdf|14-Server.pdf]]
 - [[web-engineering/resources/15-Java.pdf|15-Java.pdf]]
+- [[web-engineering/resources/16-HTTPS.pdf|16-HTTPS.pdf]]
+- [[web-engineering/resources/17-Tokens.pdf|17-Tokens.pdf]]
+- [[web-engineering/resources/18-OWASP.pdf|18-OWASP.pdf]]
