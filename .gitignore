@@ -3,3 +3,6 @@
 
 # Obsidian config
 .obsidian/
+
+# Linear Algebra homework correction — contains private student data, never push to remote
+linear-algebra-homework/

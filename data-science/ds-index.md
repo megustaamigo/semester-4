@@ -14,6 +14,11 @@ tags: [data-science, index]
 - [[data-science/lectures/03/ds-03-univariate-eda|03 — Eindimensionale EDA und Visualisierungen]]
 - [[data-science/lectures/04/ds-04-visualisierungen|04 — Visualisierungen und mehrdimensionale EDA]]
 - [[data-science/lectures/05/ds-05-multivariate-eda|05 — Mehrdimensionale EDA]]
+- [[data-science/lectures/06/ds-06-dimensionsreduktion|06 — Dimensionsreduktion (PCA)]]
+- [[data-science/lectures/07/ds-07-isomap|07 — Dimensionsreduktion: MDS und Isomap]]
+- [[data-science/lectures/08/ds-08-clustering-algorithmen|08 — Clustering: Algorithmen]]
+- [[data-science/lectures/09/ds-09-cluster-validierung|09 — Clustering: Validierung]]
+- [[data-science/lectures/11/ds-11-feature-engineering-modellierung|11 — Feature Engineering & Datengetriebene Modelle]]
 
 ## Selbstkontrolle
 
@@ -22,6 +27,11 @@ tags: [data-science, index]
 - [[data-science/selbstkontrolle/ds-selbstkontrolle-03|Selbstkontrolle 03 — Eindimensionale EDA und Visualisierungen]]
 - [[data-science/selbstkontrolle/ds-selbstkontrolle-04|Selbstkontrolle 04 — Visualisierungen und mehrdimensionale EDA]]
 - [[data-science/selbstkontrolle/ds-selbstkontrolle-05|Selbstkontrolle 05 — Mehrdimensionale EDA]]
+- [[data-science/selbstkontrolle/ds-selbstkontrolle-06|Selbstkontrolle 06 — Dimensionsreduktion (PCA)]]
+- [[data-science/selbstkontrolle/ds-selbstkontrolle-07|Selbstkontrolle 07 — MDS und Isomap]]
+- [[data-science/selbstkontrolle/ds-selbstkontrolle-08|Selbstkontrolle 08 — Clustering: Algorithmen]]
+- [[data-science/selbstkontrolle/ds-selbstkontrolle-09|Selbstkontrolle 09 — Clustering: Validierung]]
+- [[data-science/selbstkontrolle/ds-selbstkontrolle-11|Selbstkontrolle 11 — Feature Engineering & Modellierung]]
 
 ## Exercises
 
@@ -32,3 +42,8 @@ tags: [data-science, index]
 - [[data-science/resources/03_Univariate_EDA.pdf|03_Univariate_EDA.pdf]]
 - [[data-science/resources/04_Visualisierungen.pdf|04_Visualisierungen.pdf]]
 - [[data-science/resources/05_Multivariate_EDA.pdf|05_Multivariate_EDA.pdf]]
+- [[data-science/resources/06_Dimensionsreduktion.pdf|06_Dimensionsreduktion.pdf]]
+- [[data-science/resources/07_Isomap.pdf|07_Isomap.pdf]]
+- [[data-science/resources/08_Clustering_Algorithmen.pdf|08_Clustering_Algorithmen.pdf]]
+- [[data-science/resources/09_Cluster_Validierung.pdf|09_Cluster_Validierung.pdf]]
+- [[data-science/resources/11_Feature_Eng_Modellierung.pdf|11_Feature_Eng_Modellierung.pdf]]
