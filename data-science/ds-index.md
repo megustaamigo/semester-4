@@ -19,6 +19,7 @@ tags: [data-science, index]
 - [[data-science/lectures/08/ds-08-clustering-algorithmen|08 — Clustering: Algorithmen]]
 - [[data-science/lectures/09/ds-09-cluster-validierung|09 — Clustering: Validierung]]
 - [[data-science/lectures/11/ds-11-feature-engineering-modellierung|11 — Feature Engineering & Datengetriebene Modelle]]
+- [[data-science/lectures/12/ds-12-modellierung|12 — Datengetriebene Modelle]]
 
 ## Selbstkontrolle
 
@@ -32,6 +33,7 @@ tags: [data-science, index]
 - [[data-science/selbstkontrolle/ds-selbstkontrolle-08|Selbstkontrolle 08 — Clustering: Algorithmen]]
 - [[data-science/selbstkontrolle/ds-selbstkontrolle-09|Selbstkontrolle 09 — Clustering: Validierung]]
 - [[data-science/selbstkontrolle/ds-selbstkontrolle-11|Selbstkontrolle 11 — Feature Engineering & Modellierung]]
+- [[data-science/selbstkontrolle/ds-selbstkontrolle-12|Selbstkontrolle 12 — Datengetriebene Modelle]]
 
 ## Exercises
 
@@ -47,3 +49,4 @@ tags: [data-science, index]
 - [[data-science/resources/08_Clustering_Algorithmen.pdf|08_Clustering_Algorithmen.pdf]]
 - [[data-science/resources/09_Cluster_Validierung.pdf|09_Cluster_Validierung.pdf]]
 - [[data-science/resources/11_Feature_Eng_Modellierung.pdf|11_Feature_Eng_Modellierung.pdf]]
+- [[data-science/resources/12_Modellierung.pdf|12_Modellierung.pdf]]
