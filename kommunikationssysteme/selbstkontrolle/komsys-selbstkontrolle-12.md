@@ -2,86 +2,54 @@
 course: kommunikationssysteme
 type: selbstkontrolle
 lecture: 12
-date: 2026-05-12
+date: 2026-07-01
 tags:
   - kommunikationssysteme
   - selbstkontrolle
-  - tcp
-  - sliding-window
-  - flusskontrolle
-  - staukontrolle
-  - three-way-handshake
+  - bituebertragungsschicht
+  - leitungskodierung
+  - modulation
+  - wlan
   - flashcards/kommunikationssysteme
-source: Kommunikationssysteme_12_TCP.pdf
+source: Kommunikationssysteme_19_Bituebertragungsschicht.pdf
 ---
 
-# Selbstkontrolle 12 — TCP: Ein Sliding-Window-Protokoll
+# Fragen zur Selbstkontrolle — Vorlesung 12
 
-**Quelle:** [[kommunikationssysteme/resources/Kommunikationssysteme_12_TCP.pdf|Kommunikationssysteme_12_TCP.pdf]]
+Erklären Sie den Begriff Leitungskodierung!::Leitungskodierung (Schicht 1) ist die physikalische Darstellung von Digitalsignalen auf dem Medium — sie legt fest, wie eine 0 bzw. 1 als physikalisches Signal (z.B. Spannungspegel auf Kupfer) repräsentiert und in an den Kanal angepasste Codewörter (Symbole) überführt wird.
 
-## Fragen
+Welche Anforderungen kennen Sie, die ein guter Leitungscode erfüllen sollte?::Hohe Widerstandsfähigkeit gegen Dämpfung, Effizienz (hohe Übertragungsrate durch mehrwertige Codewörter), Taktrückgewinnung beim Empfänger (Synchronisation durch möglichst häufige Pegelwechsel) und Gleichstromfreiheit (positive und negative Signale treten etwa gleich oft auf).
 
-Was implementiert TCP als Basisprotokoll fuer die Flusskontrolle?::TCP implementiert ein **Sliding-Window-Protokoll**: Bei einer Fenstergroesse $n$ koennen $n$ **Bytes** verschickt werden, ohne dass ein ACK empfangen werden muss. Sobald der Empfang bestaetigt wurde, verschiebt sich das Fenster und neue Daten koennen gesendet werden.
+Erklären Sie den Unterschied zwischen Basisband- und Breitband-Übertragung!::Basisband: die digitalen Informationen werden so über die Leitung übertragen wie sie sind (nur ein Signal gleichzeitig), nötig sind nur Kodierungsverfahren für 0/1. Breitband: die Signale werden auf eine Trägerwelle aufmoduliert, durch verschiedene Trägerfrequenzen können mehrere Informationen gleichzeitig übermittelt werden.
 
-Wie nummeriert TCP Segmente?::Zyklisch mit 32 Bit. Segmente werden durch ihren **Byte-Offset im Stream** identifiziert. Die Startposition wird beim Verbindungsaufbau zufaellig festgelegt.
+Wieso spricht man von Symbolen bei der physikalischen Übertragung und nicht von Bits?::Weil nicht die Datenbits direkt, sondern Symbolbits (Codeelemente) übertragen werden — ein Symbol kann mehrere diskrete Kennzustände annehmen (z.B. ternär/quaternär) und dadurch mehrere Datenbits gleichzeitig kodieren; die Zuordnung Daten→Symbole ist selbst eine Codierung.
 
-Was bedeutet kumulatives ACK in TCP?::ACK $n+1$ sagt aus, dass **alle Daten von der vorigen logischen Position bis zur Position $n$** korrekt empfangen wurden und nun das Segment $n+1$ erwartet wird. Ein einzelnes ACK kann also viele Segmente auf einmal bestaetigen.
+Erklären Sie den Unterschied zwischen Bit- und Baudrate!::Die Baudrate (Schrittgeschwindigkeit) ist $v_s = 1/T$ mit T = Schrittdauer eines Symbols; die Bitrate ist $v_u = v_s \cdot \mathrm{ld}\,n$ mit n = Anzahl diskreter Kennzustände des Codeelements. Nur bei binären Codeelementen (n=2) stimmen Bit- und Baudrate überein.
 
-Was ist Selective Repeat in TCP?::Der Empfaenger puffert auch ausserhalb der Reihenfolge empfangene Segmente. Da TCP keine echten NAKs hat, werden mehrfach gleiche kumulative ACKs als NAK angesehen → **Triple-Duplicate-ACK** triggert einen **Fast Retransmit** bereits vor dem Timeout.
+Was ist der Unterschied zwischen einem NRZ- und einem RZ-Code?::NRZ (Non-Return-to-Zero) hält den Pegel über die gesamte Bitdauer konstant und kehrt nie auf Null zurück. RZ (Return-to-Zero) kehrt innerhalb eines Bits (nach T/2) wieder auf den Ruhepegel zurück, wodurch bei 1-Folgen Taktinformation entsteht.
 
-Was ist das Advertised Window (Receiver Window)?::Jede Bestaetigung enthaelt das Feld **Window**, das den **aktuell freien Platz im Empfangspuffer** angibt. Berechnung: `AdvertisedWindow = Empfangspuffer - ((NextByteExpected - 1) - LastByteRead)`. Das Sliding Window des Senders wird dadurch beschraenkt.
+Welche Eigenschaften besitzt der Manchester-Code? Wie unterscheiden sich die Standards nach G.E. Thomas und IEEE 802.3?::Manchester ist gleichstromfrei und selbsttaktend (Pegelwechsel in jeder Bitmitte), nutzt aber nur 50% der Kapazität (1B/2B, Taktrate = 2× Schrittgeschwindigkeit → höhere Bandbreite nötig). IEEE 802.3: 0 = Wechsel low→high (−5V→+5V bzw. −U_H→U_H), 1 = high→low. G.E. Thomas (Tanenbaum) definiert es genau umgekehrt: 0 = negativ→positiv, 1 = positiv→negativ. Umwandeln geht in beide Richtungen: aus Datenbits ergeben sich die zwei um 180° phasenverschobenen Signalelemente S1/S2, und aus der Richtung des Pegelwechsels in der Bitmitte liest man das Datenbit zurück.
 
-Wie berechnet sich das Effective Window auf Senderseite?::`EffectiveWindow = AdvertisedWindow - (LastByteSent - LastByteAcked)`. Es darf gelten: `LastByteSent - LastByteAcked < AdvertisedWindow`.
+Welche Vorteile hat ein 4B/5B Code gegenüber einem 1B/2B Code?::4B/5B kodiert 4 Datenbits in 5 Symbolbits → 80% Effizienz statt nur 50% beim 1B/2B-Code (Manchester). Durch Auswahl der günstigsten 16 von 32 Codewörtern (max. 3 Nullen in Folge) bleibt die Taktrückgewinnung möglich, und die überzähligen Codewörter dienen als Steuerinformation.
 
-Was ist die Huckepack-Technik (Piggybacking)?::Bestaetigungen koennen auf dem Datenpaket der **Gegenrichtung** "mitreiten". Da TCP bidirektional ist, wird so eigenstaendige ACK-Pakete vermieden — eine Datennachricht bestaetigt zugleich frueher empfangene Segmente.
+Welche Eigenschaften eines Trägersignals können zur Modulation verwendet werden?::Die drei Parameter der Sinuswelle $s(t)=A\cdot\sin(2\pi f t + \varphi)$: Amplitude A (ASK), Frequenz f (FSK) und Phase φ (PSK) — sowie Kombinationen davon (QAM).
 
-Was sind Delayed Acknowledgments?::Liegen keine Daten in Gegenrichtung an, werden ACKs bis zu **500 ms** verzoegert, in der Hoffnung, dass noch Daten kommen, mit denen man huckepack bestaetigen kann. Bestaetigungen werden ohnehin spaetestens fuer jedes **zweite** Segment versendet.
+Welche Möglichkeiten kennen Sie, um bei einer Breitbandübertragung die Datenrate zu erhöhen?::Höherwertige Modulation, bei der pro Symbol mehrere Bits kodiert werden — z.B. mehr Phasenlagen (QPSK bzw. M-PSK, wobei M eine Zweierpotenz sein muss) oder Kombination von Amplitude und Phase (QAM), sodass n Bit gleichzeitig übertragen werden.
 
-Was tut der Empfaenger bei Ankunft eines erwarteten Segments?::Wenn vorherige Daten schon bestaetigt sind: Delayed ACK (bis 500 ms warten). Falls vorheriges Segment noch nicht bestaetigt: sofortige kumulative Bestaetigung beider Segmente.
+Warum ist PSK weniger störanfällig als z.B. ASK?::ASK trägt die Information in der Amplitude, die durch Dämpfung/Abschwächung des Signals leicht verfälscht wird. PSK kodiert die Information in der Phasenlage, die gegenüber Amplitudenstörungen robust ist — daher in der drahtlosen Kommunikation oft bevorzugt.
 
-Was tut der Empfaenger, wenn ein Segment hinter der erwarteten Sequenznummer eintrifft?::Sofortiges Verschicken eines **Duplicate ACK (DupACK)**, das die naechste erwartete Sequenznummer angibt. Drei DupACKs in Folge triggern beim Sender den Fast Retransmit.
+Wie unterscheiden sich QPSK und QAM?::QPSK nutzt 4 Phasenlagen (2 Bit/Symbol) bei konstanter Amplitude — reine Phasenmodulation. QAM kombiniert ASK und QPSK (Amplitude + Phase) und kann so n Bit gleichzeitig übertragen (QPSK ist der Spezialfall n=2); QAM hat bei zunehmendem n eine geringere Bitfehlerrate als vergleichbare reine PSK-Verfahren.
 
-Wie schaetzt TCP die RTT?::TCP misst die Zeit zwischen Senden eines Segments und Empfang seines ACKs (**SampleRTT**), wobei Neuuebertragungen und Delayed ACKs ausgeblendet werden. Der SampleRTT wird **geglaettet** (Tiefpass), so dass die Schaetzung eine Mittelung ueber die Vergangenheit ist.
+Welche Störeinflüsse gibt es bei der Datenübertragung mit Funkwellen?::Dämpfung/Abschattung (Regen, Vegetation, Gebäude), Reflexion an großen Flächen, Streuung an kleinen Hindernissen, Beugung an Kanten und Brechung; Folge ist Mehrwegausbreitung — dasselbe Signal trifft mit verschiedenen Phasenlagen ein (Interferenz) und wird zeitlich gestreut (Interferenz mit Nachbarsymbolen). Zudem sinkt die Empfangsleistung proportional zu 1/dᵅ.
 
-Wieso ist Reaktion auf Ueberlast durch Reduktion der Datenrate sinnvoll?::Bei Timeout werden viele bereits gesendete Segmente neu uebertragen (Go-Back-N/Selective Repeat). Wenn viele Verbindungen das gleichzeitig tun, werden Router noch weiter ueberlastet (**Congestion Collapse**) und verwerfen mehr Pakete → noch mehr Timeouts. Drosselung der Senderate bricht diese positive Rueckkopplung.
+Worin unterscheidet sich ein kabelgebundenes gemeinsames Medium (z.B. ein Bus bei 10Base2) von einem funkbasierten 'gemeinsamen' Medium (Luftraum bei WLAN)?::Beim Kabelbus empfangen alle Stationen dasselbe Signal, Kollisionen sind überall erkennbar (CD möglich). Beim Funk-Medium reicht das Signal je Station unterschiedlich weit ("Broadcastnetz ohne garantierten Empfang aller Übertragungen"): eine Kollision tritt beim Empfänger auf, muss aber nicht beim Sender bemerkbar sein → Hidden/Exposed Station; gleichzeitiges Senden und Empfangen ist teuer, daher keine Kollisionserkennung.
 
-Was ist der Unterschied zwischen Flusskontrolle und Staukontrolle?::**Flusskontrolle** regelt den Datenfluss zwischen den **Endpunkten** (Empfaengerpuffer-Limit) — Sliding-Window-basiert. **Staukontrolle** befasst sich mit **Ueberlastsituationen in Routern** (Zwischensystemen) und drosselt zusaetzlich anhand des Congestion Window.
+Wie groß sind typische Übertragungsraten beim WLAN? Welche Frequenzbänder werden benutzt?::Brutto von 2 Mb/s (802.11) über 11 Mb/s (802.11b) und 54 Mb/s (802.11a/g) bis ~600 Mb/s (802.11n, MIMO); die Nutzdatenrate ist nur etwa die Hälfte der Bruttorate. Frequenzbänder: lizenzfreies 2.4 GHz-ISM-Band (2.4–2.4835 GHz) und optional 5 GHz-Band.
 
-Was ist das Congestion Window (cwnd)?::Eine zusaetzliche Beschraenkung des verfuegbaren Fensters auf **Senderseite** — meist in Vielfachen der MSS gefuehrt. Es wird vom Sender selbst verwaltet und durch Slow-Start und Congestion Avoidance veraendert, um Ueberlastsituationen zu vermeiden und Fairness zu erzielen.
+Warum ist das CSMA/CD-Verfahren bei WLAN nur schwer anwendbar?::CD (Collision Detection) erfordert gleichzeitiges Senden und Empfangen (Abhören während der Übertragung), was drahtlos sehr schwierig/teuer ist. Zudem tritt eine Kollision beim Empfänger auf, nicht notwendigerweise beim Sender (Hidden Station) — der Sender kann sie also gar nicht erkennen.
 
-Was ist die Slow-Start-Phase?::Anfangsphase: cwnd startet bei **1 MSS** und wird bei jedem erfolgreichen ACK um 1 MSS erhoeht → bei Bestaetigung eines vollen Fensters verdoppelt sich cwnd pro RTT (**exponentielles Wachstum**). Endet, wenn ssthresh oder Receiver Window erreicht ist.
+Erklären Sie das 'Hidden Station'-Problem bei WLAN!::A sendet an B, C empfängt A nicht. C will ebenfalls an B senden und stellt per Carrier Sense ein freies Medium fest (CS schlägt fehl), sendet los → Kollision bei B, die A nicht bemerkt (CD schlägt fehl). A ist für C "versteckt" (hidden).
 
-Wann wechselt TCP von Slow-Start zu Congestion Avoidance?::Wenn cwnd den Schwellenwert **ssthresh** erreicht. Ab da Additive Increase: cwnd waechst nur noch um etwa 1 MSS pro RTT (vorsichtige Annaeherung an die Netzkapazitaet).
+Erklären Sie das 'Exposed-Station'-Problem bei WLAN!::B sendet an A, C will an D senden. C stellt per Carrier Sense ein besetztes Medium fest und wartet — obwohl dies unnötig ist, da A außerhalb der Reichweite von C liegt und das Signal von C bei A ohnehin im Rauschen unterginge. C ist unnötig "exposed" und verschenkt eine mögliche parallele Übertragung.
 
-Was passiert bei einem Timeout in TCP?::ssthresh wird auf cwnd/2 gesetzt, cwnd zurueck auf 1 MSS (Slow Start), und das verlorene Segment wird neu uebertragen (Go-Back-N bzw. Selective Repeat).
-
-Was sind Fast Retransmit und Fast Recovery?::Bei **drei DupACKs** erfolgt sofortige Neuuebertragung des fehlenden Segments **vor dem Timeout** (Fast Retransmit). Da das Netz noch Pakete uebertraegt, wird kein Slow Start ausgeloest, sondern cwnd nur halbiert (**Multiplicative Decrease**) — Fast Recovery.
-
-Was schafft TCP Staukontrolle bzgl. mehrerer Verbindungen?::**Fairness**: Wird eine Leitung von $N$ TCP-Verbindungen genutzt, erhaelt jede etwa $1/N$ der Bandbreite.
-
-Wie laeuft der TCP-Verbindungsaufbau ab (Three-Way-Handshake)?::1) Client → Server: `SYN, SEQ=x`. 2) Server → Client: `SYN, SEQ=y, ACK=x+1` (kombinierte SYN+ACK-Nachricht). 3) Client → Server: `ACK=y+1, SEQ=x+1`. Sequenznummern sind zufaellig, MSS wird ausgehandelt (Minimum beider Seiten).
-
-Wie laeuft der TCP-Verbindungsabbau ab?::4-Way-Handshake: Jede Richtung wird separat per FIN signalisiert und mit ACK bestaetigt. Die Seite, die zuerst FIN sendet, signalisiert nur "ich sende keine Daten mehr", kann aber noch empfangen → die Gegenseite kann noch Daten senden und schliesst erst spaeter mit eigenem FIN.
-
-Warum 4-Way statt 3-Way beim Verbindungsabbau?::Beim Aufbau koennen SYN und ACK in einem Paket kombiniert werden, da beide Seiten **gleichzeitig** aufbauen wollen. Beim Abbau ist das nicht immer moeglich — die Seite, die zuerst FIN sendet, will nur **selbst** abschliessen, die andere Seite kann noch Daten senden.
-
-Welche Felder hat ein TCP-Segment-Header?::Source Port, Destination Port, Sequence Number, Acknowledgement Number, Data Offset, Reserved, Code (URG/ACK/PSH/RST/SYN/FIN), Window, Checksum, Urgent Pointer, Options, Data.
-
-Was bedeuten die Code-Bits URG, ACK, PSH, RST, SYN, FIN?::URG: Urgent Pointer ist gueltig. ACK: Acknowledgement Field ist gueltig. PSH: Empfaenger soll Daten sofort ausliefern (Push). RST: Verbindung zuruecksetzen. SYN: Synchronize Sequence Numbers (Verbindungsaufbau). FIN: Sender hat Ende seines Byte-Streams erreicht.
-
-Welche typischen MSS-Werte gibt es?::1460 Byte (Ethernet) oder 536 Byte. Die MSS wird so gewaehlt, dass **IP-Fragmentierung vermieden** wird. Die MSS haengt vom Betriebssystem und der TCP-Konfiguration ab.
-<!--SR:!2026-06-20,2,230-->
-
-Was ist das Push-Flag (PSH)?::Damit der Empfaenger seinen Puffer nicht unnoetig fuellt: Ein gesetztes PSH-Flag bedeutet, dass die Daten **direkt beim naechsten read** ausgeliefert werden sollen, ohne Pufferung. Eine Terminal-Emulation setzt PSH bei CRLF. In der Praxis ist ein **Flush auf den Output-Stream** ein guter Ansatz.
-
-Was ist der Nagle-Algorithmus?::Limitiert die Anzahl "kleiner" Segmente. Solange ein unbestaetigtes kleines TCP-Segment unterwegs ist, werden keine weiteren kleinen Segmente gesendet — Daten werden im Sendepuffer gesammelt, bis entweder ein ACK eintrifft **oder** ein volles MSS-Segment fuellbar ist. Deaktivierbar mit der Socket-Option **TCP_NODELAY**. Achtung: Nagle und Delayed-Ack behindern sich gegenseitig.
-
-Was ist der Urgent-Pointer (URG)?::Wenn URG-Flag gesetzt ist, interpretiert der Empfaenger den Urgent-Pointer als Offset im Segment, ab dem die wichtigen Daten beginnen. Diese werden **vor** etwaig gepufferten Daten ausgeliefert. Anwendung: interaktive Anwendungen koennen Signale (z.B. Ctrl-C) "ueberholen". API: `socket.sendUrgentData(int data)`.
-
-Was ist das Bandwidth-Delay-Produkt-Problem?::Das TCP-Window-Feld ist nur **16 Bit** breit → maximal 64 kB Uebertragungsfenster. Auf Long-Fat-Pipes (hohe Bandbreite, hohe RTT) reicht das nicht aus. Das Bandwidth-Delay-Produkt gibt die noetige Fenstergroesse bei gegebener Bandbreite und Round-Trip-Zeit an.
-
-Was ist die Window-Scale-Option?::TCP-Option, die einen logarithmischen Skalierungsfaktor (0–14) fuer das 16-Bit-Window-Feld festlegt. Wird nur im SYN-Segment beim Verbindungsaufbau ausgetauscht (in **beiden Richtungen separat**). Mit Wert 14 ergibt sich die maximale Fenstergroesse $65535 \cdot 2^{14} \approx 1{,}07$ GB. TCP-intern wird das Window dann als 30-Bit-Zahl verwaltet.
-
-Welche TCP-Varianten zur Staukontrolle kennen Sie?::Linux unterstuetzt u.a. BIC, **CUBIC** (Default), Westwood, HTCP, HSTCP, Hybla, Vegas, Scalable, LP, Veno, Yeah, Illinois. Die aktive Variante kann ueber `/boot/config-$(uname -r)` ueberprueft werden.
-
-Was ist Self-Clocking bei TCP?::Die Senderate wird durch das Ankommen von ACKs getaktet — der Sender injiziert neue Daten genau dann, wenn er ein ACK erhaelt. Dadurch passt sich TCP automatisch an die Engstelle des Pfads an (sichtbar an der Sequence-Number-Kurve, die sich der Bandbreite anschmiegt).
+Erklären Sie grob das Vorgehen bei CSMA/CA! Wie werden Kollisionen verhindert?::Vor dem Senden Carrier Sense: ist das Medium mindestens für DIFS frei, wird direkt gesendet. War es belegt, wird nach dem Freiwerden erneut DIFS gewartet und dann eine zufällige Backoff-Zeit (Vielfaches eines Zeitslots) gewürfelt; der Backoff-Zähler wird bei erneuter Belegung angehalten und beim nächsten Versuch fortgesetzt. Ist das Medium nach Ablauf noch frei, wird gesendet. Jeder korrekte Datenrahmen wird nach SIFS (ohne Backoff) mit einem ACK quittiert. Kollisionen werden durch den zufälligen Backoff und optional durch einen RTS/CTS-Handshake vermieden (adressiert das Hidden-Station-Problem).

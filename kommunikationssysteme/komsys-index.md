@@ -52,6 +52,21 @@ tags: [kommunikationssysteme, index]
 - [[kommunikationssysteme/lectures/07/komsys-13-udp|13 — User Datagram Protocol (UDP)]]
 - [[kommunikationssysteme/lectures/07/komsys-14-dns|14 — Domain Name System (DNS)]]
 
+### Vorlesung 8 — Anwendungsprotokolle
+- [[kommunikationssysteme/lectures/08/komsys-15-anwendungsprotokolle|15 — Anwendungsprotokolle]]
+
+### Vorlesung 9 — Sicherungsschicht & Netztechnik
+- [[kommunikationssysteme/lectures/09/komsys-16-sicherungsschicht-netztechnik|16 — Einführung Sicherungsschicht & Netztechnik]]
+
+### Vorlesung 10 — Kanalzuteilung
+- [[kommunikationssysteme/lectures/10/komsys-17-kanalzuteilung|17 — Kanalzuteilung]]
+
+### Vorlesung 11 — Fehlerkorrektur
+- [[kommunikationssysteme/lectures/11/komsys-18-fehlerkorrektur|18 — Fehlerkorrektur]]
+
+### Vorlesung 12 — Bitübertragungsschicht
+- [[kommunikationssysteme/lectures/12/komsys-19-bituebertragungsschicht|19 — Bitübertragungsschicht]]
+
 ## Exercises
 
 ## Resources
@@ -70,3 +85,8 @@ tags: [kommunikationssysteme, index]
 - [[kommunikationssysteme/resources/Kommunikationssysteme_12_TCP.pdf|VL6 — TCP]]
 - [[kommunikationssysteme/resources/Kommunikationssysteme_13_UDP.pdf|VL7 — UDP]]
 - [[kommunikationssysteme/resources/Kommunikationssysteme_14_DNS.pdf|VL7 — DNS]]
+- [[kommunikationssysteme/resources/Kommunikationssysteme_15_Anwendungsprotokolle.pdf|VL8 — Anwendungsprotokolle]]
+- [[kommunikationssysteme/resources/Kommunikationssysteme_16_Einfuehrung_Sicherungsschicht_Netztechnik.pdf|VL9 — Sicherungsschicht & Netztechnik]]
+- [[kommunikationssysteme/resources/Kommunikationssysteme_17_Kanalzuteilung.pdf|VL10 — Kanalzuteilung]]
+- [[kommunikationssysteme/resources/Kommunikationssysteme_18_Fehlerkorrektur.pdf|VL11 — Fehlerkorrektur]]
+- [[kommunikationssysteme/resources/Kommunikationssysteme_19_Bituebertragungsschicht.pdf|VL12 — Bitübertragungsschicht]]
